@@ -46,15 +46,15 @@ if st.session_state["acesso_liberado"]:
                 converters={"Ano": lambda x: str(x).replace(".0", "").strip()}
             )
         except:
-            df = pd.read_csv(
-                "convenios.csv",
-                sep=";",   
-                encoding="latin1",
-                dtype={"CNPJ": str},
-                converters={"Ano": lambda x: str(x).replace(".0", "").strip()}
-            )
-        
+                df = pd.read_csv(
+        "convenios.csv",
+        sep=";",   
+        encoding="latin1",
+        dtype={"CNPJ": str},
+        converters={"Ano": lambda x: str(x).replace(".0", "").strip()}
+    )
     df.columns = df.columns.str.strip()
+
 
     st.title("🔍 Consulta de Convênios (Conrepass)")
 
