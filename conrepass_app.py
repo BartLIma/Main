@@ -26,16 +26,8 @@ if not st.session_state["acesso_liberado"]:
 # --- APLICATIVO PRINCIPAL LIBERADO ---
 if st.session_state["acesso_liberado"]:
     
-    # Carregamento seguro com dupla checagem de encoding para evitar erros de acentuação
+    # CORREÇÃO CRÍTICA DE ENCODING: Tenta primeiro UTF-8 (Padrão moderno que preserva os acentos)
     try:
-        df = pd.read_csv(
-            "convenios.csv",
-            sep=";",   
-            encoding="latin1",
-            dtype={"CNPJ": str},
-            converters={"Ano": lambda x: str(x).replace(".0", "").strip()}
-        )
-    except:
         df = pd.read_csv(
             "convenios.csv",
             sep=";",   
@@ -43,6 +35,24 @@ if st.session_state["acesso_liberado"]:
             dtype={"CNPJ": str},
             converters={"Ano": lambda x: str(x).replace(".0", "").strip()}
         )
+    except:
+        # Se falhar (por ser um arquivo legado do Excel antigo), recorre ao latin1/utf-8-sig
+        try:
+            df = pd.read_csv(
+                "convenios.csv",
+                sep=";",   
+                encoding="utf-8-sig",
+                dtype={"CNPJ": str},
+                converters={"Ano": lambda x: str(x).replace(".0", "").strip()}
+            )
+        except:
+            df = pd.read_csv(
+                "convenios.csv",
+                sep=";",   
+                encoding="latin1",
+                dtype={"CNPJ": str},
+                converters={"Ano": lambda x: str(x).replace(".0", "").strip()}
+            )
         
     df.columns = df.columns.str.strip()
 
@@ -58,7 +68,7 @@ if st.session_state["acesso_liberado"]:
         resultado = df[df["Instrumento"].astype(str).str.strip() == str(instrumento).strip()]
         
         if not resultado.empty:
-            idx_registro = resultado.index[0] # Captura a linha exata como número inteiro
+            idx_registro = resultado.index[0] # Captura a linha exata como número inteiro puro
             
             # --- MENU LATERAL VERTICALIZADO ---
             st.sidebar.header("Menu de Controle")
@@ -79,8 +89,8 @@ if st.session_state["acesso_liberado"]:
             st.sidebar.markdown("---")
             st.sidebar.subheader("Ações do Repass")
 
-            # Botão de Exportar Base
-            csv_data = df.to_csv(sep=";", index=False).encode("latin1")
+            # Botão de Exportar Base adaptado para manter a codificação correta
+            csv_data = df.to_csv(sep=";", index=False, encoding="utf-8-sig").encode("utf-8-sig")
             st.sidebar.download_button(
                 label="📥 Baixar Base Completa",
                 data=csv_data,
