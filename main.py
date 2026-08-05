@@ -15,8 +15,8 @@ escolha_app = st.sidebar.radio(
     "Selecione o Sistema:",
     [
         "🏠 Menu Inicial",
-        "🔍 Consulta Conrepass",
-        "📊 Relatório de Acompanhamento"
+        "🔍 Consulta Repasses",
+        "📊 Monitoramento"
     ],
     index=["🏠 Menu Inicial", "🔍 Consulta Conrepass", "📊 Relatório de Acompanhamento"].index(st.session_state["app_selecionado"])
 )
@@ -35,13 +35,13 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
     col_cards_1, col_cards_2 = st.columns(2)
     
     with col_cards_1:
-        st.info("### 🔍 Consulta Conrepass\nPainel completo de análise, auditoria visual e consulta de dados consolidados de convênios a partir da base histórica.")
+        st.info("### 🔍 Consulta Repasses\nPainel completo de análise, auditoria visual e consulta de dados consolidados de convênios a partir da base histórica.")
         if st.button("Abrir Conrepass ➡️", use_container_width=True):
             st.session_state["app_selecionado"] = "🔍 Consulta Conrepass"
             st.rerun()
             
     with col_cards_2:
-        st.success("### 📊 Relatório de Acompanhamento\nFormulário de monitoramento em blocos sequenciais com exportação de dados booleanos.")
+        st.success("### 📊 Monitoramento\nFormulário de monitoramento em blocos sequenciais com exportação de dados booleanos.")
         if st.button("Abrir Relatório ➡️", use_container_width=True):
             st.session_state["app_selecionado"] = "📊 Relatório de Acompanhamento"
             st.rerun()
