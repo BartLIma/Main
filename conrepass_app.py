@@ -45,13 +45,16 @@ opcoes_menu = [
     "📊 Monitoramento"
 ]
 
-# Seletor do Aplicativo amarrado nativamente ao session_state via key
+# CORREÇÃO: Usando uma chave totalmente exclusiva para o Hub que nunca colidirá com os sub-apps
 escolha_app = st.sidebar.radio(
     "Selecione o Sistema:",
     opcoes_menu,
-    key="app_selecionado" # Amarração nativa direta elimina a necessidade de index manual
+    index=opcoes_menu.index(st.session_state["app_selecionado"]),
+    key="navegacao_principal_hub" 
 )
 
+# Sincroniza a seleção do rádio com a nossa variável de controle
+st.session_state["app_selecionado"] = escolha_app
 st.sidebar.markdown("---")
 
 # --- EXECUÇÃO DINÂMICA DAS TELAS ---
@@ -64,13 +67,12 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
     
     with col_cards_1:
         st.info("### 🔍 Consulta Repasses\nPainel completo de análise, auditoria visual e consulta de dados consolidados de convênios a partir da base histórica.")
-        # Correção: O clique ativa o callback e muda de tela na hora
         st.button("Abrir Conrepass ➡️", use_container_width=True, on_click=ir_para_conrepass)
             
     with col_cards_2:
         st.success("### 📊 Monitoramento\nFormulário de monitoramento em blocos sequenciais com exportação de dados booleanos.")
-        # Correção: O clique ativa o callback e muda de tela na hora
         st.button("Abrir Relatório ➡️", use_container_width=True, on_click=ir_para_monitoramento)
+
 elif st.session_state["app_selecionado"] == "🔍 Consulta Repasses":
     try:
         with open("conrepass_app.py", "r", encoding="utf-8") as f:
