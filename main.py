@@ -18,7 +18,7 @@ escolha_app = st.sidebar.radio(
         "🔍 Consulta Repasses",
         "📊 Monitoramento"
     ],
-    index=["🏠 Menu Inicial", "🔍 Consulta Conrepass", "📊 Relatório de Acompanhamento"].index(st.session_state["app_selecionado"])
+    index=["🏠 Menu Inicial", "🔍 Consulta Repasses", "📊 Relatório de Acompanhamento"].index(st.session_state["app_selecionado"])
 )
 
 # Atualiza a memória de navegação caso o usuário altere a opção manual no menu
