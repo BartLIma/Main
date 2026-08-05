@@ -41,7 +41,7 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
             st.rerun()
             
     with col_cards_2:
-        st.success("### 📊 Relatório de Acompanhamento\nFormulário de preenchimento automatizado em 4 blocos sequenciais com exportação de dados booleanos.")
+        st.success("### 📊 Relatório de Acompanhamento\nFormulário de monitoramento em blocos sequenciais com exportação de dados booleanos.")
         if st.button("Abrir Relatório ➡️", use_container_width=True):
             st.session_state["app_selecionado"] = "📊 Relatório de Acompanhamento"
             st.rerun()
