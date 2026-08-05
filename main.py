@@ -7,7 +7,7 @@ if "app_selecionado" not in st.session_state:
     st.session_state["app_selecionado"] = "🏠 Menu Inicial"
 
 # --- CONSTRUÇÃO DO PAINEL LATERAL DE CONTROLE UNIFICADO ---
-st.sidebar.title("🎛️ Painel Guardiã")
+st.sidebar.title("🎛️ Painel Monitora")
 st.sidebar.markdown("---")
 
 # Seletor do Aplicativo que gerencia o fluxo de telas
@@ -27,7 +27,7 @@ st.sidebar.markdown("---")
 
 # --- EXECUÇÃO DINÂMICA DAS TELAS ---
 if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
-    st.title("🛡️ Guardiã dos Dados — Hub Central de Convênios")
+    st.title("🛡️ Gestão de Dados — Hub Central de Convênios")
     st.subheader("Bem-vindo ao painel integrado de controle e monitoramento de instrumentos.")
     st.markdown("---")
     
@@ -57,7 +57,7 @@ elif st.session_state["app_selecionado"] == "🔍 Consulta Conrepass":
 elif st.session_state["app_selecionado"] == "📊 Relatório de Acompanhamento":
     try:
         # Importa e executa o código do aplicativo Rel_Acomp de forma segura
-        import rel_acomp_app
+        import relacomp_app
     except ModuleNotFoundError:
         st.error("Erro operacional: O arquivo 'rel_acomp_app.py' não foi localizado na mesma pasta deste Hub.")
     except Exception as e:
