@@ -95,8 +95,7 @@ if st.session_state["acesso_liberado"]:
             # --- CONTEÚDO DINÂMICO CONFORME SELEÇÃO DO MENU ---
             st.markdown("---")
             st.subheader(f"📌 {menu_blocos} — Convênio nº {instrumento}")
-                        if "🔑 Identificação" in menu_blocos:
-                col_a, col_b = st.columns(2)
+                        if "🔑 Identificação" in menu_blocos:col_a, col_b = st.columns(2)
                 with col_a:
                     st.write(f"**Instrumento:** {resultado.loc[idx_registro, 'Instrumento'].values[0]}")
                     st.write(f"**Ano:** {resultado.loc[idx_registro, 'Ano'].values[0]}")
