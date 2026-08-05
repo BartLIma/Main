@@ -50,16 +50,15 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
             st.rerun()
 elif st.session_state["app_selecionado"] == "🔍 Consulta Repasses":
     try:
-        # Tenta ler o arquivo de código em UTF-8 (padrão do Streamlit)
-        with open("conrepass_app.py", "r", encoding="utf-8") as f:
-            codigo_fonte = f.read()
-    except (UnicodeDecodeError, Exception):
-        # Se falhar ou truncar, lê usando a codificação padrão do Windows Excel (evita os balões com ?)
-        with open("conrepass_app.py", "r", encoding="latin1") as f:
-            codigo_fonte = f.read()
-            
-    try:
-        exec(codigo_fonte, globals())
+        # Método nativo: Importa o arquivo exatamente como se estivesse rodando sozinho
+        import importlib
+        import sys
+        
+        if "conrepass_app" in sys.modules:
+            # Força o recarregamento do arquivo para aceitar mudanças de aba sem travar
+            importlib.reload(sys.modules["conrepass_app"])
+        else:
+            import conrepass_app
     except FileNotFoundError:
         st.error("Erro operacional: O arquivo 'conrepass_app.py' não foi localizado na mesma pasta deste Hub.")
     except Exception as e:
@@ -67,35 +66,19 @@ elif st.session_state["app_selecionado"] == "🔍 Consulta Repasses":
 
 elif st.session_state["app_selecionado"] == "📊 Monitoramento":
     try:
-        with open("rel_acomp_app.py", "r", encoding="utf-8") as f:
-            codigo_fonte = f.read()
-    except (UnicodeDecodeError, Exception):
-        with open("rel_acomp_app.py", "r", encoding="latin1") as f:
-            codigo_fonte = f.read()
-            
-    try:
-        exec(codigo_fonte, globals())
+        # Método nativo: Importa o arquivo exatamente como se estivesse rodando sozinho
+        import importlib
+        import sys
+        
+        if "rel_acomp_app" in sys.modules:
+            # Força o recarregamento do arquivo para aceitar mudanças de aba sem travar
+            importlib.reload(sys.modules["rel_acomp_app"])
+        else:
+            import rel_acomp_app
     except FileNotFoundError:
         st.error("Erro operacional: O arquivo 'rel_acomp_app.py' não foi localizado na mesma pasta deste Hub.")
     except Exception as e:
         st.error(f"Ocorreu uma falha ao renderizar o Relatório de Acompanhamento: {e}")
-
-
-elif st.session_state["app_selecionado"] == "📊 Monitoramento":
-    try:
-        with open("rel_acomp_app.py", "r", encoding="utf-8") as f:
-            codigo_fonte = f.read()
-    except (UnicodeDecodeError, Exception):
-        with open("rel_acomp_app.py", "r", encoding="latin1") as f:
-            codigo_fonte = f.read()
-            
-    try:
-        exec(codigo_fonte, globals())
-    except FileNotFoundError:
-        st.error("Erro operacional: O arquivo 'rel_acomp_app.py' não foi localizado na mesma pasta deste Hub.")
-    except Exception as e:
-        st.error(f"Ocorreu uma falha ao renderizar o Relatório de Acompanhamento: {e}")
-
 
 # --- RODAPÉ DISCRETO PADRONIZADO DO HUB ---
 st.sidebar.markdown("---")
@@ -104,3 +87,4 @@ st.sidebar.markdown(
     "Bartolomeu Lima - Corecon-ES 1541</p>",
     unsafe_allow_html=True
 )
+
