@@ -81,6 +81,22 @@ elif st.session_state["app_selecionado"] == "📊 Monitoramento":
         st.error(f"Ocorreu uma falha ao renderizar o Relatório de Acompanhamento: {e}")
 
 
+elif st.session_state["app_selecionado"] == "📊 Monitoramento":
+    try:
+        with open("rel_acomp_app.py", "r", encoding="utf-8") as f:
+            codigo_fonte = f.read()
+    except (UnicodeDecodeError, Exception):
+        with open("rel_acomp_app.py", "r", encoding="latin1") as f:
+            codigo_fonte = f.read()
+            
+    try:
+        exec(codigo_fonte, globals())
+    except FileNotFoundError:
+        st.error("Erro operacional: O arquivo 'rel_acomp_app.py' não foi localizado na mesma pasta deste Hub.")
+    except Exception as e:
+        st.error(f"Ocorreu uma falha ao renderizar o Relatório de Acompanhamento: {e}")
+
+
 # --- RODAPÉ DISCRETO PADRONIZADO DO HUB ---
 st.sidebar.markdown("---")
 st.sidebar.markdown(
