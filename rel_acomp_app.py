@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-# MUDANÇA DE TÍTULO SOLICITADA
+# Título do módulo
 st.title("Monitoramento de Convênios")
 
 # Inicializa a memória estável para as 28 perguntas se ainda não existirem
@@ -43,7 +43,7 @@ def limpar_tramitacao():
     st.session_state["reset_key"] += 1
 
 # --- AJUSTE DA LARGURA DO CAMPO DO CONVÊNIO ---
-col1, _ = st.columns([1, 3])
+col1, _ = st.columns(2)
 with col1:
     codigo = st.text_input(
         "Código do Convênio (Instrumento)", 
@@ -62,27 +62,24 @@ convenio_encontrado = False
 
 if st.session_state["codigo_convenio"].strip():
     try:
-        # Abre o CSV usando a mesma codificação estável que corrigimos
         df_busca = pd.read_csv("convenios.csv", sep=",", encoding="utf-8-sig", dtype={"Instrumento": str})
     except Exception:
         df_busca = pd.read_csv("convenios.csv", sep=";", encoding="utf-8-sig", dtype={"Instrumento": str})
         
     df_busca.columns = df_busca.columns.str.strip()
     
-    # Executa o filtro de busca pelo instrumento digitado
     resultado_busca = df_busca[df_busca["Instrumento"].astype(str).str.strip() == str(st.session_state["codigo_convenio"]).strip()]
     
     if not resultado_busca.empty:
         convenio_encontrado = True
-        idx_b = resultado_busca.index[0]
-        # Captura as informações solicitadas dos blocos 1 e 2
-        prop_nome = str(resultado_busca.loc[idx_b, 'Nome Proponente'])
-        prop_situacao = str(resultado_busca.loc[idx_b, 'Situacao'])
-        data_inicio = str(resultado_busca.loc[idx_b, 'Inicio Vigencia'])
-        data_fim = str(resultado_busca.loc[idx_b, 'Fim Vigencia'])
-        data_limite = str(resultado_busca.loc[idx_b, 'Data Limite para Apresentar PC'])
+        idx_b = resultado_busca.index
+        prop_nome = str(resultado_busca.loc[idx_b, 'Nome Proponente'].values[0])
+        prop_situacao = str(resultado_busca.loc[idx_b, 'Situacao'].values[0])
+        data_inicio = str(resultado_busca.loc[idx_b, 'Inicio Vigencia'].values[0])
+        data_fim = str(resultado_busca.loc[idx_b, 'Fim Vigencia'].values[0])
+        data_limite = str(resultado_busca.loc[idx_b, 'Data Limite para Apresentar PC'].values[0])
 
-# --- EXIBIÇÃO AUTOMÁTICA DOS DADOS COLETADOS (Se houver convênio digitado) ---
+# --- EXIBIÇÃO AUTOMÁTICA DOS DADOS COLETADOS ---
 if st.session_state["codigo_convenio"].strip():
     if convenio_encontrado:
         st.success(f"✅ Dados carregados do Conrepass para o Instrumento nº {st.session_state['codigo_convenio']}")
@@ -104,13 +101,16 @@ menu = st.sidebar.radio(
     ["📋 Execução do PTA", "📦 Gestão de Recursos", "💰 Movimentação Financeira", "⚙️ Tramitação"]
 )
 
+# 🗺️ AJUSTE SOLICITADO: Adicionado setas indicativas explícitas para o usuário ver as opções abaixo
+st.sidebar.markdown("<h4 style='text-align: center; color: #ff4b4b; margin: 15px 0 0 0;'>👇 VEJA ABAIXO 👇</h4>", unsafe_allow_html=True)
+st.sidebar.markdown("<p style='text-align: center; font-size: 11px; color: gray; margin: 0 0 15px 0;'>Role a barra lateral para ver as ações</p>", unsafe_allow_html=True)
 st.sidebar.markdown("---")
-st.sidebar.subheader("Ações do Relatório")
+
+st.sidebar.subheader("⚙️ Ações do Relatório")
 st.sidebar.button("Anular Tudo / Limpar", on_click=limpar_tudo, use_container_width=True)
 
 # GERAÇÃO DO DATAFRAME CONSOLIDADO COM A NOVA ORDEM SOLICITADA
 respostas = {}
-# 2 - Adicionar à gravação nesta ordem exata antes de P1 a P28:
 respostas["Instrumento"] = st.session_state["codigo_convenio"]
 respostas["Nome Proponente"] = prop_nome
 respostas["Situação"] = prop_situacao
@@ -143,7 +143,7 @@ perguntas_pta = [
     "P02 - Execução na mesma localidade/endereço?",
     "P03 - Notificação ao Conselho de Saúde etc?",
     "P04 - Houve cotação/divulgação eletrônica?",
-    "P05 - Preços compatíveis com referência?"
+    "P05 - Preços compatíveis with referência?"
 ]
 
 perguntas_recursos = [
@@ -207,8 +207,26 @@ elif "⚙️ Tramitação" in menu:
         st.session_state[f"salvo_p{i}"] = check
     st.button("Limpar Tramitação", on_click=limpar_tramitacao)
 
-# TABELA CONSOLIDADA NO RODAPÉ
+# TABELA CONSOLIDADA NO RODAPÉ COM FUNÇÃO COPIAR DIRETO PARA O EXCEL
 if st.session_state["exibir_resultados"]:
     st.markdown("---")
     st.subheader("📊 Resultados Consolidados (Todos os Blocos)")
+    
+    # 🌟 CORREÇÃO ADICIONADA: Cria o formato de texto ideal para colar direto no Excel (separado por tabulação)
+    texto_excel = "Campo\tResposta\n"
+    for idx, row in df_consolidado.iterrows():
+        texto_excel += f"{idx}\t{row['Resposta']}\n"
+        
+    col_btn_copy, _ = st.columns([1, 3])
+    with col_btn_copy:
+        # Novo componente que copia o bloco de dados estruturado com 1 clique para a área de transferência
+        st.copy_to_clipboard(texto_excel, label="📋 Copiar Tabela (Formato Excel)", before_copy_label="Copiando...")
+        
     st.write(df_consolidado)
+
+# --- RODAPÉ DISCRETO PADRONIZADO ---
+st.markdown("---")
+st.markdown(
+    "<p style='text-align:right; font-size:12px; color:gray;'>Bartolomeu Lima - Corecon-ES 1541</p>",
+    unsafe_allow_html=True
+)
