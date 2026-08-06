@@ -82,11 +82,11 @@ elif st.session_state["app_selecionado"] == "📊 Monitoramento":
         st.error("Ocorreu uma falha ao renderizar o Relatório de Acompanhamento: {e}")
 elif st.session_state["app_selecionado"] == "🩺 Consulta Secretários":
     try:
-        with open("consulta_secretarios_app.py", "r", encoding="utf-8") as f:
+        with open("app.py", "r", encoding="utf-8") as f:
             codigo_fonte = f.read()
         exec(codigo_fonte, globals())
     except FileNotFoundError:
-        st.error("Erro: O arquivo 'consulta_secretarios_app.py' não foi localizado.")
+        st.error("Erro: O arquivo 'app.py' não foi localizado.")
     except Exception as e:
         st.error(f"Falha ao renderizar: {e}")
 
