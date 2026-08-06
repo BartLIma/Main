@@ -26,8 +26,17 @@ if not st.session_state["acesso_liberado"]:
 # --- APLICATIVO PRINCIPAL LIBERADO ---
 if st.session_state["acesso_liberado"]:
     
-    # CORREÇÃO CRÍTICA DE ENCODING: Tenta primeiro UTF-8 (Padrão moderno que preserva os acentos)
+    # SOLUÇÃO DEFINITIVA: Força a codificação original do Excel (latin1) primeiro
     try:
+        df = pd.read_csv(
+            "convenios.csv",
+            sep=";",   
+            encoding="latin1",
+            dtype={"CNPJ": str},
+            converters={"Ano": lambda x: str(x).replace(".0", "").strip()}
+        )
+    except Exception:
+        # Fallback de segurança apenas se o latin1 falhar criticamente
         df = pd.read_csv(
             "convenios.csv",
             sep=";",   
@@ -35,26 +44,8 @@ if st.session_state["acesso_liberado"]:
             dtype={"CNPJ": str},
             converters={"Ano": lambda x: str(x).replace(".0", "").strip()}
         )
-    except:
-        # Se falhar (por ser um arquivo legado do Excel antigo), recorre ao latin1/utf-8-sig
-        try:
-            df = pd.read_csv(
-                "convenios.csv",
-                sep=";",   
-                encoding="utf-8-sig",
-                dtype={"CNPJ": str},
-                converters={"Ano": lambda x: str(x).replace(".0", "").strip()}
-            )
-        except:
-                df = pd.read_csv(
-        "convenios.csv",
-        sep=";",   
-        encoding="latin1",
-        dtype={"CNPJ": str},
-        converters={"Ano": lambda x: str(x).replace(".0", "").strip()}
-    )
+        
     df.columns = df.columns.str.strip()
-
 
     st.title("🔍 Consulta de Convênios (Conrepass)")
 
@@ -89,8 +80,8 @@ if st.session_state["acesso_liberado"]:
             st.sidebar.markdown("---")
             st.sidebar.subheader("Ações do Repass")
 
-            # Botão de Exportar Base adaptado para manter a codificação correta
-            csv_data = df.to_csv(sep=";", index=False, encoding="utf-8-sig").encode("utf-8-sig")
+            # Botão de Exportar Base mantendo latin1 para compatibilidade com o Excel local
+            csv_data = df.to_csv(sep=";", index=False, encoding="latin1").encode("latin1")
             st.sidebar.download_button(
                 label="📥 Baixar Base Completa",
                 data=csv_data,
