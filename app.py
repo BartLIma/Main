@@ -17,15 +17,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Senha fixa padronizada do seu ecossistema
-senha_correta = "ditre123"
-
-if "acesso_liberado" not in st.session_state:
-    st.session_state["acesso_liberado"] = False
-
-if "indice_secretario_consultado" not in st.session_state:
-    st.session_state["indice_secretario_consultado"] = None
-
 # --- TELA DE LOGIN SEGURA ---
 if not st.session_state["acesso_liberado"]:
     st.title("🔐 Painel Secretários - Autenticação")
