@@ -26,32 +26,52 @@ if not st.session_state["acesso_liberado"]:
 # --- APLICATIVO PRINCIPAL LIBERADO ---
 if st.session_state["acesso_liberado"]:
     
-    # CARREGAMENTO TRI-SEGURO: Resolve de vez os problemas de caracteres estranhos e mistos
+    # 🌟 ADICIONADO AQUI: Funções auxiliares para limpar e blindar campos contra formato científico 🌟
+    def tratar_sei(x):
+        s = str(x).strip()
+        if not s or s.lower() == "nan": return ""
+        if s.endswith('.0'): s = s[:-2]
+        if 'e+' in s.lower():
+            try: s = f"{float(s):.0f}"
+            except: pass
+        return s
+
+    def tratar_cnpj(x):
+        s = str(x).strip()
+        if not s or s.lower() == "nan": return ""
+        if s.endswith('.0'): s = s[:-2]
+        if 'e+' in s.lower():
+            try: s = f"{float(s):.0f}"
+            except: pass
+        if s.isdigit() and len(s) < 14:
+            s = s.zfill(14)
+        return s
+
+    # 🌟 ADICIONADO AQUI: Substituição do pd.read_csv antigo pelo carregamento inteligente 🌟
     try:
+        df = pd.read_csv(
+            "convenios.csv",
+            sep=",",   
+            encoding="utf-8-sig",
+            dtype={"Instrumento": str},
+            converters={
+                "Ano": lambda x: str(x).replace(".0", "").strip(),
+                "CNPJ": tratar_cnpj,       
+                "Processo SEI": tratar_sei 
+            }
+        )
+    except Exception:
         df = pd.read_csv(
             "convenios.csv",
             sep=";",   
             encoding="utf-8-sig",
-            dtype={"CNPJ": str},
-            converters={"Ano": lambda x: str(x).replace(".0", "").strip()}
+            dtype={"Instrumento": str},
+            converters={
+                "Ano": lambda x: str(x).replace(".0", "").strip(),
+                "CNPJ": tratar_cnpj,
+                "Processo SEI": tratar_sei
+            }
         )
-    except Exception:
-        try:
-            df = pd.read_csv(
-                "convenios.csv",
-                sep=";",   
-                encoding="latin1",
-                dtype={"CNPJ": str},
-                converters={"Ano": lambda x: str(x).replace(".0", "").strip()}
-            )
-        except Exception:
-            df = pd.read_csv(
-                "convenios.csv",
-                sep=";",   
-                encoding="utf-8",
-                dtype={"CNPJ": str},
-                converters={"Ano": lambda x: str(x).replace(".0", "").strip()}
-            )
         
     df.columns = df.columns.str.strip()
 
@@ -88,7 +108,7 @@ if st.session_state["acesso_liberado"]:
             st.sidebar.markdown("---")
             st.sidebar.subheader("Ações do Repass")
 
-            # CORREÇÃO CRÍTICA: Exportação alterada para utf-8-sig para neutralizar o caractere inválido \ufffd
+            # Botão de Exportar Base adaptado para manter a codificação correta
             csv_data = df.to_csv(sep=";", index=False, encoding="utf-8-sig").encode("utf-8-sig")
             st.sidebar.download_button(
                 label="📥 Baixar Base Completa",
@@ -101,6 +121,7 @@ if st.session_state["acesso_liberado"]:
             # --- CONTEÚDO DINÂMICO CONFORME SELEÇÃO DO MENU ---
             st.markdown("---")
             st.subheader(f"📌 {menu_blocos} — Convênio nº {instrumento}")
+
             if "🔑 Identificação" in menu_blocos:
                 col_a, col_b = st.columns(2)
                 with col_a:
