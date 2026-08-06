@@ -1,9 +1,8 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(layout="wide")
-
-st.title("Guardiã dos Dados - Análise de Convênios")
+# MUDANÇA DE TÍTULO SOLICITADA
+st.title("Monitoramento de Convênios")
 
 # Inicializa a memória estável para as 28 perguntas se ainda não existirem
 for i in range(1, 29):
@@ -43,49 +42,84 @@ def limpar_tramitacao():
         st.session_state[f"salvo_p{i}"] = False
     st.session_state["reset_key"] += 1
 
-
 # --- AJUSTE DA LARGURA DO CAMPO DO CONVÊNIO ---
-# Criamos 4 colunas: a primeira curta para o código, as outras 3 apenas para empurrar o espaço
-col1, col2, col3, col4 = st.columns([2, 3, 3, 3])
-
+col1, _ = st.columns([1, 3])
 with col1:
     codigo = st.text_input(
-        "Código do Convênio (6 dígitos)", 
+        "Código do Convênio (Instrumento)", 
         value=st.session_state["codigo_convenio"], 
-        max_chars=6,
         key=f"campo_codigo_{st.session_state['reset_key']}"
     )
     st.session_state["codigo_convenio"] = codigo
 
+# --- BUSCA AUTOMÁTICA DE DADOS NO CONREPASS (convenios.csv) ---
+prop_nome = "Não localizado"
+prop_situacao = "Não localizado"
+data_inicio = "Não localizado"
+data_fim = "Não localizado"
+data_limite = "Não localizado"
+convenio_encontrado = False
+
+if st.session_state["codigo_convenio"].strip():
+    try:
+        # Abre o CSV usando a mesma codificação estável que corrigimos
+        df_busca = pd.read_csv("convenios.csv", sep=",", encoding="utf-8-sig", dtype={"Instrumento": str})
+    except Exception:
+        df_busca = pd.read_csv("convenios.csv", sep=";", encoding="utf-8-sig", dtype={"Instrumento": str})
+        
+    df_busca.columns = df_busca.columns.str.strip()
+    
+    # Executa o filtro de busca pelo instrumento digitado
+    resultado_busca = df_busca[df_busca["Instrumento"].astype(str).str.strip() == str(st.session_state["codigo_convenio"]).strip()]
+    
+    if not resultado_busca.empty:
+        convenio_encontrado = True
+        idx_b = resultado_busca.index[0]
+        # Captura as informações solicitadas dos blocos 1 e 2
+        prop_nome = str(resultado_busca.loc[idx_b, 'Nome Proponente'])
+        prop_situacao = str(resultado_busca.loc[idx_b, 'Situacao'])
+        data_inicio = str(resultado_busca.loc[idx_b, 'Inicio Vigencia'])
+        data_fim = str(resultado_busca.loc[idx_b, 'Fim Vigencia'])
+        data_limite = str(resultado_busca.loc[idx_b, 'Data Limite para Apresentar PC'])
+
+# --- EXIBIÇÃO AUTOMÁTICA DOS DADOS COLETADOS (Se houver convênio digitado) ---
+if st.session_state["codigo_convenio"].strip():
+    if convenio_encontrado:
+        st.success(f"✅ Dados carregados do Conrepass para o Instrumento nº {st.session_state['codigo_convenio']}")
+        c_inf1, c_inf2 = st.columns(2)
+        with c_inf1:
+            st.markdown(f"**Nome Proponente:** {prop_nome}")
+            st.markdown(f"**Situação:** {prop_situacao}")
+            st.markdown(f"**Início Vigência:** {data_inicio}")
+        with c_inf2:
+            st.markdown(f"**Fim Vigência:** {data_fim}")
+            st.markdown(f"**Data Limite para Apresentar PC:** {data_limite}")
+    else:
+        st.error("⚠️ Instrumento (convênio) não localizado na base do Conrepass.")
 
 # --- CONSTRUÇÃO DO MENU LATERAL ---
 st.sidebar.header("Menu de Controle")
-
-# Menu de seleção de blocos agora com ícones visuais
 menu = st.sidebar.radio(
     "Selecione o Bloco de Análise",
-    [
-        "📋 Execução do PTA", 
-        "📦 Gestão de Recursos", 
-        "💰 Movimentação Financeira", 
-        "⚙️ Tramitação"
-    ]
+    ["📋 Execução do PTA", "📦 Gestão de Recursos", "💰 Movimentação Financeira", "⚙️ Tramitação"]
 )
 
 st.sidebar.markdown("---")
 st.sidebar.subheader("Ações do Relatório")
-
-# Botão de limpar tudo
 st.sidebar.button("Anular Tudo / Limpar", on_click=limpar_tudo, use_container_width=True)
 
-# Gera o DataFrame consolidado alterado para retornar VERDADEIRO ou FALSO
+# GERAÇÃO DO DATAFRAME CONSOLIDADO COM A NOVA ORDEM SOLICITADA
 respostas = {}
+# 2 - Adicionar à gravação nesta ordem exata antes de P1 a P28:
+respostas["Instrumento"] = st.session_state["codigo_convenio"]
+respostas["Nome Proponente"] = prop_nome
+respostas["Situação"] = prop_situacao
+
 for i in range(1, 29):
     respostas[f"P{i:02d}"] = "VERDADEIRO" if st.session_state[f"salvo_p{i}"] else "FALSO"
 
 df_consolidado = pd.DataFrame.from_dict(respostas, orient="index", columns=["Resposta"])
-df_consolidado.loc["Convênio"] = st.session_state["codigo_convenio"]
-csv_dados = df_consolidado.to_csv().encode("utf-8")
+csv_dados = df_consolidado.to_csv().encode("utf-8-sig")
 
 # Botão Salvar Análise no Menu Lateral
 if st.sidebar.button("💾 Salvar Análise", use_container_width=True):
@@ -95,7 +129,7 @@ else:
         st.session_state["exibir_resultados"] = False
 
 # Botão Baixar CSV no Menu Lateral
-nome_arquivo = f"analise_convenio_{st.session_state['codigo_convenio'] if st.session_state['codigo_convenio'] else 'sem_codigo'}.csv"
+nome_arquivo = f"monitoramento_convenio_{st.session_state['codigo_convenio'] if st.session_state['codigo_convenio'] else 'sem_codigo'}.csv"
 st.sidebar.download_button(
     label="📥 Baixar CSV (Todos os Blocos)",
     data=csv_dados,
@@ -103,9 +137,7 @@ st.sidebar.download_button(
     mime="text/csv",
     use_container_width=True
 )
-
-
-# --- CONTEÚDO PRINCIPAL (CHECKBOXES) ---
+# --- LISTAS DE PERGUNTAS DE P1 A P28 ---
 perguntas_pta = [
     "P01 - Objeto executado conforme metas do PTA?",
     "P02 - Execução na mesma localidade/endereço?",
@@ -146,7 +178,7 @@ perguntas_tram = [
     "P28 - Pareceres incluídos na Plataforma?"
 ]
 
-# Validação do menu contendo os novos nomes com ícones
+# EXIBIÇÃO DINÂMICA CONFORME O MENU SELECIONADO
 if "📋 Execução do PTA" in menu:
     st.header("Bloco de Análise: Execução do PTA")
     for i, pergunta in enumerate(perguntas_pta, start=1):
@@ -175,7 +207,7 @@ elif "⚙️ Tramitação" in menu:
         st.session_state[f"salvo_p{i}"] = check
     st.button("Limpar Tramitação", on_click=limpar_tramitacao)
 
-# Exibição da tabela consolidada com os novos termos lógicos (VERDADEIRO / FALSO)
+# TABELA CONSOLIDADA NO RODAPÉ
 if st.session_state["exibir_resultados"]:
     st.markdown("---")
     st.subheader("📊 Resultados Consolidados (Todos os Blocos)")
