@@ -26,28 +26,45 @@ if not st.session_state["acesso_liberado"]:
 # --- APLICATIVO PRINCIPAL LIBERADO ---
 if st.session_state["acesso_liberado"]:
     
-    # 🌟 ADICIONADO AQUI: Funções auxiliares para limpar e blindar campos contra formato científico 🌟
-    def tratar_sei(x):
-        s = str(x).strip()
-        if not s or s.lower() == "nan": return ""
-        if s.endswith('.0'): s = s[:-2]
-        if 'e+' in s.lower():
-            try: s = f"{float(s):.0f}"
-            except: pass
+    # 🌟 CORREÇÃO ABSOLUTA: Função robusta que converte qualquer formato científico (maiúsculo, minúsculo, com vírgula ou ponto)
+    def tratar_formato_cientifico(valor, eh_cnpj=False):
+        s = str(valor).strip()
+        if not s or s.lower() == "nan": 
+            return ""
+        
+        # Remove o '.0' caso o Excel tenha colocado
+        if s.endswith('.0'): 
+            s = s[:-2]
+            
+        # Padroniza a vírgula para ponto e força tudo para minúsculo para checar notação científica
+        s_checagem = s.replace(",", ".").lower()
+        
+        if 'e+' in s_checagem:
+            try:
+                # Converte o número científico de volta para texto numérico inteiro puro
+                num_puro = f"{float(s_checagem):.0f}"
+                s = num_puro
+            except Exception:
+                pass
+        
+        # Tratamento exclusivo para o CNPJ manter o padrão de 14 dígitos com zeros na frente
+        if eh_cnpj:
+            s_limpo = s.replace(".", "").replace(",", "").replace("-", "").replace("/", "").strip()
+            if s_limpo.isdigit() and len(s_limpo) < 14:
+                s = s_limpo.zfill(14)
+            else:
+                s = s_limpo
+                
         return s
+
+    # Criação dos conversores amarrados à nova função mestre
+    def tratar_sei(x):
+        return tratar_formato_cientifico(x, eh_cnpj=False)
 
     def tratar_cnpj(x):
-        s = str(x).strip()
-        if not s or s.lower() == "nan": return ""
-        if s.endswith('.0'): s = s[:-2]
-        if 'e+' in s.lower():
-            try: s = f"{float(s):.0f}"
-            except: pass
-        if s.isdigit() and len(s) < 14:
-            s = s.zfill(14)
-        return s
+        return tratar_formato_cientifico(x, eh_cnpj=True)
 
-    # 🌟 ADICIONADO AQUI: Substituição do pd.read_csv antigo pelo carregamento inteligente 🌟
+    # CARREGAMENTO TRI-SEGURO ATUALIZADO
     try:
         df = pd.read_csv(
             "convenios.csv",
