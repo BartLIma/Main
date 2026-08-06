@@ -26,24 +26,33 @@ if not st.session_state["acesso_liberado"]:
 # --- APLICATIVO PRINCIPAL LIBERADO ---
 if st.session_state["acesso_liberado"]:
     
-    # SOLUÇÃO DEFINITIVA: Força a codificação original do Excel (latin1) primeiro
+        # CORREÇÃO DEFINITIVA DE ENCODING: Tenta UTF-8 com BOM (utf-8-sig) primeiro para limpar os símbolos
     try:
         df = pd.read_csv(
             "convenios.csv",
             sep=";",   
-            encoding="latin1",
+            encoding="utf-8-sig",
             dtype={"CNPJ": str},
             converters={"Ano": lambda x: str(x).replace(".0", "").strip()}
         )
     except Exception:
-        # Fallback de segurança apenas se o latin1 falhar criticamente
-        df = pd.read_csv(
-            "convenios.csv",
-            sep=";",   
-            encoding="utf-8",
-            dtype={"CNPJ": str},
-            converters={"Ano": lambda x: str(x).replace(".0", "").strip()}
-        )
+        try:
+            df = pd.read_csv(
+                "convenios.csv",
+                sep=";",   
+                encoding="latin1",
+                dtype={"CNPJ": str},
+                converters={"Ano": lambda x: str(x).replace(".0", "").strip()}
+            )
+        except Exception:
+            df = pd.read_csv(
+                "convenios.csv",
+                sep=";",   
+                encoding="utf-8",
+                dtype={"CNPJ": str},
+                converters={"Ano": lambda x: str(x).replace(".0", "").strip()}
+            )
+
         
     df.columns = df.columns.str.strip()
 
