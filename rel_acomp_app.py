@@ -111,12 +111,13 @@ st.sidebar.markdown("---")
 st.sidebar.subheader("⚙️ Ações do Relatório")
 st.sidebar.button("Anular Tudo / Limpar", on_click=limpar_tudo, use_container_width=True)
 
-# GERAÇÃO DO DATAFRAME CONSOLIDADO COM A NOVA ORDEM SOLICITADA
+# 🌟 CORREÇÃO: Montagem do dicionário na ordem exata solicitada (Instrumento -> Proponente -> Situação)
 respostas = {}
 respostas["Instrumento"] = st.session_state["codigo_convenio"]
 respostas["Nome Proponente"] = prop_nome
-respostas["Situação"] = prop_situacao
+respostas["Situação"] = prop_situacao  # Mudado para cá! Fica logo após o proponente
 
+# Só depois de criar os 3 cabeçalhos é que o loop insere as perguntas de P01 a P28
 for i in range(1, 29):
     respostas[f"P{i:02d}"] = "VERDADEIRO" if st.session_state[f"salvo_p{i}"] else "FALSO"
 
