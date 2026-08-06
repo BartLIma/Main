@@ -13,7 +13,8 @@ st.sidebar.markdown("---")
 opcoes_menu = [
     "🏠 Menu Inicial", 
     "🔍 Consulta Repasses", 
-    "📊 Monitoramento"
+    "📊 Monitoramento",
+    "🩺 Consulta Secretários"  # 👈 Adicione esta linha aqui
 ]
 
 if st.session_state["app_selecionado"] not in opcoes_menu:
@@ -78,7 +79,16 @@ elif st.session_state["app_selecionado"] == "📊 Monitoramento":
     except FileNotFoundError:
         st.error("Erro operacional: O arquivo 'rel_acomp_app.py' não foi localizado na mesma pasta deste Hub.")
     except Exception as e:
-        st.error(f"Ocorreu uma falha ao renderizar o Relatório de Acompanhamento: {e}")
+        st.error("Ocorreu uma falha ao renderizar o Relatório de Acompanhamento: {e}")
+elif st.session_state["app_selecionado"] == "🩺 Consulta Secretários":
+    try:
+        with open("consulta_secretarios_app.py", "r", encoding="utf-8") as f:
+            codigo_fonte = f.read()
+        exec(codigo_fonte, globals())
+    except FileNotFoundError:
+        st.error("Erro: O arquivo 'consulta_secretarios_app.py' não foi localizado.")
+    except Exception as e:
+        st.error(f"Falha ao renderizar: {e}")
 
 # --- RODAPÉ DISCRETO PADRONIZADO DO HUB ---
 st.sidebar.markdown("---")
