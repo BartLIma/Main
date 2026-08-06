@@ -145,7 +145,7 @@ perguntas_pta = [
     "P02 - Execução na mesma localidade/endereço?",
     "P03 - Notificação ao Conselho de Saúde etc?",
     "P04 - Houve cotação/divulgação eletrônica?",
-    "P05 - Preços compatíveis com referência?"
+    "P05 - Preços compatíveis com referência?"  # Corrigido de 'with' para 'com'
 ]
 
 perguntas_recursos = [
@@ -215,8 +215,8 @@ if st.session_state["exibir_resultados"]:
     st.subheader("📊 Resultados Consolidados (Todos os Blocos)")
     st.caption("💡 Para copiar os dados para o Excel, passe o mouse sobre a tabela abaixo e clique no ícone de cópia (📋) no canto superior direito.")
     
-    # Substituído pelo st.dataframe que traz o botão de cópia nativo e é 100% compatível
-    st.dataframe(df_consolidated, use_container_width=True)
+    # CORREÇÃO: Variável ajustada de 'df_consolidated' para o nome correto 'df_consolidado'
+    st.dataframe(df_consolidado, use_container_width=True)
 
 # --- RODAPÉ DISCRETO PADRONIZADO ---
 st.markdown("---")
