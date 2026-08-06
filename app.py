@@ -17,19 +17,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- TELA DE LOGIN SEGURA ---
-if not st.session_state["acesso_liberado"]:
-    st.title("🔐 Painel Secretários - Autenticação")
-    col_login, _ = st.columns(2)
-    with col_login:
-        senha = st.text_input("Digite a senha para acessar:", type="password")
-        if st.button("Entrar", use_container_width=True):
-            if senha == senha_correta:
-                st.session_state["acesso_liberado"] = True
-                st.rerun()
-            else:
-                st.error("Senha incorreta! Tente novamente.")
-
 # --- APLICATIVO PRINCIPAL LIBERADO (SOMENTE CONSULTA) ---
 if st.session_state["acesso_liberado"]:
     
