@@ -64,8 +64,9 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
             st.session_state["app_selecionado"] = "🩺 Consulta Secretários"
             st.rerun()
 
-    with col_cards_4:
-        st.help("### ⚙️ Consulta Equipamentos\nConsulta técnica de equipamentos com classificação automatizada de exigência de Análise Especializada.")
+        with col_cards_4:
+        # Trocado st.help por st.info para eliminar a documentação automática
+        st.info("### ⚙️ Consulta Equipamentos\nConsulta técnica de equipamentos com classificação automatizada de exigência de Análise Especializada.")
         if st.button("Abrir Equipamentos ➡️", use_container_width=True):
             st.session_state["app_selecionado"] = "⚙️ Consulta Equipamentos"
             st.rerun()
