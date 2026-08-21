@@ -42,7 +42,8 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
     col_cards_1, col_cards_2 = st.columns(2)
     
     with col_cards_1:
-        st.info("### 🔍 Consulta Repasses\nPainel completo de análise, auditoria visual e consulta de dados consolidados de convênios a partir da base histórica.")
+        # ÍCONE ATUALIZADO PARA CÉDULA DE DINHEIRO (💵)
+        st.info("### 💵 Consulta Repasses\nPainel completo de análise, auditoria visual e consulta de dados consolidados de convênios a partir da base histórica.")
         if st.button("Abrir Conrepass ➡️", use_container_width=True):
             st.session_state["app_selecionado"] = "🔍 Consulta Repasses"
             st.rerun()
@@ -54,7 +55,7 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
             st.rerun()
             
     st.markdown("---")
-        
+    
     # Segunda linha de cards (Secretários e Equipamentos)
     col_cards_3, col_cards_4 = st.columns(2)
     
@@ -65,10 +66,12 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
             st.rerun()
 
     with col_cards_4:
-        st.info("### ⚙️ Consulta Equipamentos\nConsulta técnica de equipamentos com classificação automatizada de exigência de Análise Especializada.")
+        # ÍCONE ATUALIZADO PARA EQUIPAMENTO MÉDICO (⚙️🩺)
+        st.info("### ⚙️🩺 Consulta Equipamentos\nConsulta técnica de equipamentos com classificação automatizada de exigência de Análise Especializada.")
         if st.button("Abrir Equipamentos ➡️", use_container_width=True):
             st.session_state["app_selecionado"] = "⚙️ Consulta Equipamentos"
             st.rerun()
+
 
 elif st.session_state["app_selecionado"] == "🔍 Consulta Repasses":
     try:
