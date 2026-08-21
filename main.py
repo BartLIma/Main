@@ -10,13 +10,13 @@ if "app_selecionado" not in st.session_state:
 st.sidebar.title("🎛️ Painel Monitora")
 st.sidebar.markdown("---")
 
-# Lista unificada de opções atualizada com Consulta de Equipamentos
+# Lista unificada de opções - Padronizada e Limpa
 opcoes_menu = [
     "🏠 Menu Inicial", 
     "🔍 Consulta Repasses", 
     "📊 Monitoramento",
     "🏥 Consulta Secretários",
-    "🩺 Consulta Equipamentos"  # 👈 Novo item incluído aqui
+    "🩺 Consulta Equipamentos"
 ]
 
 if st.session_state["app_selecionado"] not in opcoes_menu:
@@ -42,7 +42,6 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
     col_cards_1, col_cards_2 = st.columns(2)
     
     with col_cards_1:
-        # ÍCONE ATUALIZADO PARA CÉDULA DE DINHEIRO (💵)
         st.info("### 💵 Consulta Repasses\nPainel completo de análise, auditoria visual e consulta de dados consolidados de convênios a partir da base histórica.")
         if st.button("Abrir Conrepass ➡️", use_container_width=True):
             st.session_state["app_selecionado"] = "🔍 Consulta Repasses"
@@ -62,16 +61,14 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
     with col_cards_3:
         st.warning("### 🏥 Consulta Secretários\nPainel de consulta e gerenciamento de informações de secretários municipais e estaduais.")
         if st.button("Abrir Secretários ➡️", use_container_width=True):
-            st.session_state["app_selecionado"] = "🩺 Consulta Secretários"
+            st.session_state["app_selecionado"] = "🏥 Consulta Secretários"  # 💥 CORRIGIDO: Agora bate com o menu
             st.rerun()
 
     with col_cards_4:
-        # ÍCONE ATUALIZADO PARA EQUIPAMENTO MÉDICO (🩺)
         st.info("### 🩺 Consulta Equipamentos\nConsulta técnica de equipamentos com classificação automatizada de exigência de Análise Especializada.")
         if st.button("Abrir Equipamentos ➡️", use_container_width=True):
-            st.session_state["app_selecionado"] = "⚙️ Consulta Equipamentos"
+            st.session_state["app_selecionado"] = "🩺 Consulta Equipamentos"  # 💥 CORRIGIDO: Agora bate com o menu
             st.rerun()
-
 
 elif st.session_state["app_selecionado"] == "🔍 Consulta Repasses":
     try:
@@ -99,7 +96,8 @@ elif st.session_state["app_selecionado"] == "📊 Monitoramento":
     except Exception as e:
         st.error(f"Ocorreu uma falha ao renderizar o Relatório de Acompanhamento: {e}")
 
-elif st.session_state["app_selecionado"] == "🩺 Consulta Secretários":
+# 💥 CORRIGIDO: O texto do elif agora é idêntico ao do menu lateral
+elif st.session_state["app_selecionado"] == "🏥 Consulta Secretários":
     try:
         with open("app.py", "r", encoding="utf-8") as f:
             codigo_fonte = f.read()
@@ -109,12 +107,11 @@ elif st.session_state["app_selecionado"] == "🩺 Consulta Secretários":
     except Exception as e:
         st.error(f"Falha ao renderizar: {e}")
 
-# --- NOVO BLOCO: EXECUÇÃO DA CONSULTA DE EQUIPAMENTOS ---
-elif st.session_state["app_selecionado"] == "⚙️ Consulta Equipamentos":
+# 💥 CORRIGIDO: O texto do elif agora é idêntico ao do menu lateral
+elif st.session_state["app_selecionado"] == "🩺 Consulta Equipamentos":
     try:
         import importlib
         import sys
-        # Utiliza o mesmo padrão modular blindado adotado no Hub
         if "Cons_Equip_app" in sys.modules:
             importlib.reload(sys.modules["Cons_Equip_app"])
         else:
