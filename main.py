@@ -54,7 +54,7 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
             st.rerun()
             
     st.markdown("---")
-    
+        
     # Segunda linha de cards (Secretários e Equipamentos)
     col_cards_3, col_cards_4 = st.columns(2)
     
@@ -64,8 +64,7 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
             st.session_state["app_selecionado"] = "🩺 Consulta Secretários"
             st.rerun()
 
-        with col_cards_4:
-        # Trocado st.help por st.info para eliminar a documentação automática
+    with col_cards_4:
         st.info("### ⚙️ Consulta Equipamentos\nConsulta técnica de equipamentos com classificação automatizada de exigência de Análise Especializada.")
         if st.button("Abrir Equipamentos ➡️", use_container_width=True):
             st.session_state["app_selecionado"] = "⚙️ Consulta Equipamentos"
