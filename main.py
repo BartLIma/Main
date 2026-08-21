@@ -7,7 +7,8 @@ if "app_selecionado" not in st.session_state:
     st.session_state["app_selecionado"] = "🏠 Menu Inicial"
 
 # --- CONSTRUÇÃO DO PAINEL LATERAL DE CONTROLE UNIFICADO ---
-st.sidebar.title("🎛️ Painel Monitora")
+# 💥 SUBSTITUÍDO: "🎛️ Painel Monitora" por "Gestão de Dados de Convênios"
+st.sidebar.title("Gestão de Dados de Convênios")
 st.sidebar.markdown("---")
 
 # Lista unificada de opções - Padronizada e Limpa
@@ -34,8 +35,7 @@ st.sidebar.markdown("---")
 
 # --- EXECUÇÃO DINÂMICA DAS TELAS ---
 if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
-    st.title("🛡️ Gestão de Dados — Hub Central de Convênios")
-    st.subheader("Bem-vindo ao painel integrado de controle e monitoramento de instrumentos.")
+    # 💥 REMOVIDO: Título antigo e Subheader de boas-vindas do topo da página
     st.markdown("---")
     
     # Primeira linha de cards (Repasses e Monitoramento)
@@ -61,13 +61,13 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
     with col_cards_3:
         st.warning("### 🏥 Consulta Secretários\nPainel de consulta e gerenciamento de informações de secretários municipais e estaduais.")
         if st.button("Abrir Secretários ➡️", use_container_width=True):
-            st.session_state["app_selecionado"] = "🏥 Consulta Secretários"  # 💥 CORRIGIDO: Agora bate com o menu
+            st.session_state["app_selecionado"] = "🏥 Consulta Secretários"
             st.rerun()
 
     with col_cards_4:
         st.info("### 🩺 Consulta Equipamentos\nConsulta técnica de equipamentos com classificação automatizada de exigência de Análise Especializada.")
         if st.button("Abrir Equipamentos ➡️", use_container_width=True):
-            st.session_state["app_selecionado"] = "🩺 Consulta Equipamentos"  # 💥 CORRIGIDO: Agora bate com o menu
+            st.session_state["app_selecionado"] = "🩺 Consulta Equipamentos"
             st.rerun()
 
 elif st.session_state["app_selecionado"] == "🔍 Consulta Repasses":
@@ -96,7 +96,6 @@ elif st.session_state["app_selecionado"] == "📊 Monitoramento":
     except Exception as e:
         st.error(f"Ocorreu uma falha ao renderizar o Relatório de Acompanhamento: {e}")
 
-# 💥 CORRIGIDO: O texto do elif agora é idêntico ao do menu lateral
 elif st.session_state["app_selecionado"] == "🏥 Consulta Secretários":
     try:
         with open("app.py", "r", encoding="utf-8") as f:
@@ -107,7 +106,6 @@ elif st.session_state["app_selecionado"] == "🏥 Consulta Secretários":
     except Exception as e:
         st.error(f"Falha ao renderizar: {e}")
 
-# 💥 CORRIGIDO: O texto do elif agora é idêntico ao do menu lateral
 elif st.session_state["app_selecionado"] == "🩺 Consulta Equipamentos":
     try:
         import importlib
