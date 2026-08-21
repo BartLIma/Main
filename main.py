@@ -10,11 +10,13 @@ if "app_selecionado" not in st.session_state:
 st.sidebar.title("🎛️ Painel Monitora")
 st.sidebar.markdown("---")
 
+# Lista unificada de opções atualizada com Consulta de Equipamentos
 opcoes_menu = [
     "🏠 Menu Inicial", 
     "🔍 Consulta Repasses", 
     "📊 Monitoramento",
-    "🩺 Consulta Secretários"  # 👈 Adicione esta linha aqui
+    "🩺 Consulta Secretários",
+    "⚙️ Consulta Equipamentos"  # 👈 Novo item incluído aqui
 ]
 
 if st.session_state["app_selecionado"] not in opcoes_menu:
@@ -36,6 +38,7 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
     st.subheader("Bem-vindo ao painel integrado de controle e monitoramento de instrumentos.")
     st.markdown("---")
     
+    # Primeira linha de cards (Repasses e Monitoramento)
     col_cards_1, col_cards_2 = st.columns(2)
     
     with col_cards_1:
@@ -49,14 +52,29 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
         if st.button("Abrir Relatório ➡️", use_container_width=True):
             st.session_state["app_selecionado"] = "📊 Monitoramento"
             st.rerun()
+            
+    st.markdown("---")
+    
+    # Segunda linha de cards (Secretários e Equipamentos)
+    col_cards_3, col_cards_4 = st.columns(2)
+    
+    with col_cards_3:
+        st.warning("### 🩺 Consulta Secretários\nPainel de consulta e gerenciamento de informações de secretários municipais e estaduais.")
+        if st.button("Abrir Secretários ➡️", use_container_width=True):
+            st.session_state["app_selecionado"] = "🩺 Consulta Secretários"
+            st.rerun()
+
+    with col_cards_4:
+        st.help("### ⚙️ Consulta Equipamentos\nConsulta técnica de equipamentos com classificação automatizada de exigência de Análise Especializada.")
+        if st.button("Abrir Equipamentos ➡️", use_container_width=True):
+            st.session_state["app_selecionado"] = "⚙️ Consulta Equipamentos"
+            st.rerun()
+
 elif st.session_state["app_selecionado"] == "🔍 Consulta Repasses":
     try:
-        # Método nativo: Importa o arquivo exatamente como se estivesse rodando sozinho
         import importlib
         import sys
-        
         if "conrepass_app" in sys.modules:
-            # Força o recarregamento do arquivo para aceitar mudanças de aba sem travar
             importlib.reload(sys.modules["conrepass_app"])
         else:
             import conrepass_app
@@ -67,19 +85,17 @@ elif st.session_state["app_selecionado"] == "🔍 Consulta Repasses":
 
 elif st.session_state["app_selecionado"] == "📊 Monitoramento":
     try:
-        # Método nativo: Importa o arquivo exatamente como se estivesse rodando sozinho
         import importlib
         import sys
-        
         if "rel_acomp_app" in sys.modules:
-            # Força o recarregamento do arquivo para aceitar mudanças de aba sem travar
             importlib.reload(sys.modules["rel_acomp_app"])
         else:
             import rel_acomp_app
     except FileNotFoundError:
         st.error("Erro operacional: O arquivo 'rel_acomp_app.py' não foi localizado na mesma pasta deste Hub.")
     except Exception as e:
-        st.error("Ocorreu uma falha ao renderizar o Relatório de Acompanhamento: {e}")
+        st.error(f"Ocorreu uma falha ao renderizar o Relatório de Acompanhamento: {e}")
+
 elif st.session_state["app_selecionado"] == "🩺 Consulta Secretários":
     try:
         with open("app.py", "r", encoding="utf-8") as f:
@@ -90,6 +106,21 @@ elif st.session_state["app_selecionado"] == "🩺 Consulta Secretários":
     except Exception as e:
         st.error(f"Falha ao renderizar: {e}")
 
+# --- NOVO BLOCO: EXECUÇÃO DA CONSULTA DE EQUIPAMENTOS ---
+elif st.session_state["app_selecionado"] == "⚙️ Consulta Equipamentos":
+    try:
+        import importlib
+        import sys
+        # Utiliza o mesmo padrão modular blindado adotado no Hub
+        if "Cons_Equip_app" in sys.modules:
+            importlib.reload(sys.modules["Cons_Equip_app"])
+        else:
+            import Cons_Equip_app
+    except FileNotFoundError:
+        st.error("Erro operacional: O arquivo 'Cons_Equip_app.py' não foi localizado na mesma pasta deste Hub.")
+    except Exception as e:
+        st.error(f"Ocorreu uma falha ao renderizar a Consulta de Equipamentos: {e}")
+
 # --- RODAPÉ DISCRETO PADRONIZADO DO HUB ---
 st.sidebar.markdown("---")
 st.sidebar.markdown(
@@ -97,4 +128,3 @@ st.sidebar.markdown(
     "Bartolomeu Lima - Corecon-ES 1541</p>",
     unsafe_allow_html=True
 )
-
