@@ -67,7 +67,7 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
 
     with col_cards_4:
         # ÍCONE ATUALIZADO PARA EQUIPAMENTO MÉDICO (🩺)
-        st.info("### ⚙️🩺 Consulta Equipamentos\nConsulta técnica de equipamentos com classificação automatizada de exigência de Análise Especializada.")
+        st.info("### 🩺 Consulta Equipamentos\nConsulta técnica de equipamentos com classificação automatizada de exigência de Análise Especializada.")
         if st.button("Abrir Equipamentos ➡️", use_container_width=True):
             st.session_state["app_selecionado"] = "⚙️ Consulta Equipamentos"
             st.rerun()
