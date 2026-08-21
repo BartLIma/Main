@@ -15,8 +15,8 @@ opcoes_menu = [
     "🏠 Menu Inicial", 
     "🔍 Consulta Repasses", 
     "📊 Monitoramento",
-    "🩺 Consulta Secretários",
-    "⚙️ Consulta Equipamentos"  # 👈 Novo item incluído aqui
+    "🏥 Consulta Secretários",
+    "🩺 Consulta Equipamentos"  # 👈 Novo item incluído aqui
 ]
 
 if st.session_state["app_selecionado"] not in opcoes_menu:
@@ -60,13 +60,13 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
     col_cards_3, col_cards_4 = st.columns(2)
     
     with col_cards_3:
-        st.warning("### 🩺 Consulta Secretários\nPainel de consulta e gerenciamento de informações de secretários municipais e estaduais.")
+        st.warning("### 🏥 Consulta Secretários\nPainel de consulta e gerenciamento de informações de secretários municipais e estaduais.")
         if st.button("Abrir Secretários ➡️", use_container_width=True):
             st.session_state["app_selecionado"] = "🩺 Consulta Secretários"
             st.rerun()
 
     with col_cards_4:
-        # ÍCONE ATUALIZADO PARA EQUIPAMENTO MÉDICO (⚙️🩺)
+        # ÍCONE ATUALIZADO PARA EQUIPAMENTO MÉDICO (🩺)
         st.info("### ⚙️🩺 Consulta Equipamentos\nConsulta técnica de equipamentos com classificação automatizada de exigência de Análise Especializada.")
         if st.button("Abrir Equipamentos ➡️", use_container_width=True):
             st.session_state["app_selecionado"] = "⚙️ Consulta Equipamentos"
