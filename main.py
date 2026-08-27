@@ -7,7 +7,7 @@ if "app_selecionado" not in st.session_state:
     st.session_state["app_selecionado"] = "🏠 Menu Inicial"
 
 # --- CONSTRUÇÃO DO PAINEL LATERAL DE CONTROLE UNIFICADO ---
-st.sidebar.title("Gestão de Dados de Convênios")
+st.sidebar.title("Gestão de Dados de Transferências")
 st.sidebar.markdown("---")
 
 # Lista unificada de opções - Atualizada com o Monitoramento de Obras
