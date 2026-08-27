@@ -7,17 +7,17 @@ if "app_selecionado" not in st.session_state:
     st.session_state["app_selecionado"] = "🏠 Menu Inicial"
 
 # --- CONSTRUÇÃO DO PAINEL LATERAL DE CONTROLE UNIFICADO ---
-# 💥 SUBSTITUÍDO: "🎛️ Painel Monitora" por "Gestão de Dados de Convênios"
 st.sidebar.title("Gestão de Dados de Convênios")
 st.sidebar.markdown("---")
 
-# Lista unificada de opções - Padronizada e Limpa
+# Lista unificada de opções - Atualizada com o Monitoramento de Obras
 opcoes_menu = [
     "🏠 Menu Inicial", 
     "🔍 Consulta Repasses", 
     "📊 Monitoramento",
     "🏥 Consulta Secretários",
-    "🩺 Consulta Equipamentos"
+    "%s" % "🩺 Consulta Equipamentos",
+    "🏗️ Monitoramento de Obras"  # 👈 Novo item incluído aqui
 ]
 
 if st.session_state["app_selecionado"] not in opcoes_menu:
@@ -35,7 +35,6 @@ st.sidebar.markdown("---")
 
 # --- EXECUÇÃO DINÂMICA DAS TELAS ---
 if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
-    # 💥 REMOVIDO: Título antigo e Subheader de boas-vindas do topo da página
     st.markdown("---")
     
     # Primeira linha de cards (Repasses e Monitoramento)
@@ -68,6 +67,17 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
         st.info("### 🩺 Consulta Equipamentos\nConsulta técnica de equipamentos com classificação automatizada de exigência de Análise Especializada.")
         if st.button("Abrir Equipamentos ➡️", use_container_width=True):
             st.session_state["app_selecionado"] = "🩺 Consulta Equipamentos"
+            st.rerun()
+
+    st.markdown("---")
+
+    # Terceira linha de cards - Dedicada ao novo Monitoramento de Obras SISMOB
+    col_cards_5, _ = st.columns(2) # Usa a primeira coluna e deixa a segunda vazia para manter o tamanho
+    
+    with col_cards_5:
+        st.info("### 🏗️ Monitoramento de Obras\nAcompanhamento estratégico de engenharia para obras do Novo PAC e Retomada com foco em pendências no SISMOB.")
+        if st.button("Abrir Gestão de Obras ➡️", use_container_width=True):
+            st.session_state["app_selecionado"] = "🏗️ Monitoramento de Obras"
             st.rerun()
 
 elif st.session_state["app_selecionado"] == "🔍 Consulta Repasses":
@@ -118,6 +128,20 @@ elif st.session_state["app_selecionado"] == "🩺 Consulta Equipamentos":
         st.error("Erro operacional: O arquivo 'Cons_Equip_app.py' não foi localizado na mesma pasta deste Hub.")
     except Exception as e:
         st.error(f"Ocorreu uma falha ao renderizar a Consulta de Equipamentos: {e}")
+
+# --- NOVO BLOCO: EXECUÇÃO DO MONITORAMENTO DE OBRAS ---
+elif st.session_state["app_selecionado"] == "🏗️ Monitoramento de Obras":
+    try:
+        import importlib
+        import sys
+        if "monit_obras" in sys.modules:
+            importlib.reload(sys.modules["monit_obras"])
+        else:
+            import monit_obras
+    except FileNotFoundError:
+        st.error("Erro operacional: O arquivo 'monit_obras.py' não foi localizado na mesma pasta deste Hub.")
+    except Exception as e:
+        st.error(f"Ocorreu uma falha ao renderizar o Monitoramento de Obras: {e}")
 
 # --- RODAPÉ DISCRETO PADRONIZADO DO HUB ---
 st.sidebar.markdown("---")
