@@ -10,14 +10,15 @@ if "app_selecionado" not in st.session_state:
 st.sidebar.title("Gestão de Dados de Transferências")
 st.sidebar.markdown("---")
 
-# Lista unificada de opções - Atualizada com o Monitoramento de Obras
+# Lista unificada de opções - Atualizada com o Monitoramento de Obras e Emendas Parlamentares
 opcoes_menu = [
     "🏠 Menu Inicial", 
     "🔍 Consulta Repasses", 
     "📊 Monitoramento",
     "🏥 Consulta Secretários",
     "%s" % "🩺 Consulta Equipamentos",
-    "🏗️ Monitoramento de Obras"  # 👈 Novo item incluído aqui
+    "🏗️ Monitoramento de Obras",
+    "🏛️ Emendas Parlamentares"  # 👈 Novo item incluído aqui
 ]
 
 if st.session_state["app_selecionado"] not in opcoes_menu:
@@ -71,13 +72,20 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
 
     st.markdown("---")
 
-    # Terceira linha de cards - Dedicada ao novo Monitoramento de Obras SISMOB
-    col_cards_5, _ = st.columns(2) # Usa a primeira coluna e deixa a segunda vazia para manter o tamanho
+    # Terceira linha de cards - Lado a Lado: Gestão de Obras e o Novo Painel de Emendas
+    col_cards_5, col_cards_6 = st.columns(2) # 👈 Agora usamos as duas colunas
     
     with col_cards_5:
         st.info("### 🏗️ Monitoramento de Obras\nAcompanhamento estratégico de engenharia para obras do Novo PAC e Retomada com foco em pendências no SISMOB.")
         if st.button("Abrir Gestão de Obras ➡️", use_container_width=True):
             st.session_state["app_selecionado"] = "🏗️ Monitoramento de Obras"
+            st.rerun()
+
+    with col_cards_6:
+        # --- 🏛️ ADIÇÃO DO NOVO CARD DE EMENDAS PARLAMENTARES ---
+        st.success("### 🏛️ Emendas Parlamentares\nConsulta unificada de destinações e emendas federais enviadas à Paraíba (Período 2023-2026).")
+        if st.button("Abrir Painel de Emendas ➡️", use_container_width=True):
+            st.session_state["app_selecionado"] = "🏛️ Emendas Parlamentares"
             st.rerun()
 
 elif st.session_state["app_selecionado"] == "🔍 Consulta Repasses":
@@ -129,7 +137,6 @@ elif st.session_state["app_selecionado"] == "🩺 Consulta Equipamentos":
     except Exception as e:
         st.error(f"Ocorreu uma falha ao renderizar a Consulta de Equipamentos: {e}")
 
-# --- NOVO BLOCO: EXECUÇÃO DO MONITORAMENTO DE OBRAS ---
 elif st.session_state["app_selecionado"] == "🏗️ Monitoramento de Obras":
     try:
         import importlib
@@ -142,6 +149,20 @@ elif st.session_state["app_selecionado"] == "🏗️ Monitoramento de Obras":
         st.error("Erro operacional: O arquivo 'monit_obras.py' não foi localizado na mesma pasta deste Hub.")
     except Exception as e:
         st.error(f"Ocorreu uma falha ao renderizar o Monitoramento de Obras: {e}")
+
+# --- NOVO BLOCO: EXECUÇÃO DO PAINEL DE EMENDAS PARLAMENTARES ---
+elif st.session_state["app_selecionado"] == "🏛️ Emendas Parlamentares":
+    try:
+        import importlib
+        import sys
+        if "Emendas_app" in sys.modules:
+            importlib.reload(sys.modules["Emendas_app"])
+        else:
+            import Emendas_app
+    except FileNotFoundError:
+        st.error("Erro operacional: O arquivo 'Emendas_app.py' não foi localizado na mesma pasta deste Hub.")
+    except Exception as e:
+        st.error(f"Ocorreu uma falha ao renderizar o Painel de Emendas: {e}")
 
 # --- RODAPÉ DISCRETO PADRONIZADO DO HUB ---
 st.sidebar.markdown("---")
