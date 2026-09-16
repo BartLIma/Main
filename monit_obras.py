@@ -36,27 +36,36 @@ coordenadas_pb = {
 def limpar_texto_muni(txt):
     return str(txt).lower().strip().replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u").replace("â","a").replace("ê","e").replace("ô","o").replace("ã","a").replace("õ","a").replace("ç","c")
 
-# --- CARREGAMENTO IMPECÁVEL DE BANCOS DE DADOS ---
-df_sec = pd.DataFrame()
-if os.path.exists("secretarios_cosems_pb.csv"):
-    for enc in ["utf-8-sig", "latin1", "cp1252"]:
-        try:
-            df_sec = pd.read_csv("secretarios_cosems_pb.csv", sep=";", dtype=str)
-            df_sec.columns = df_sec.columns.str.strip()
-            break
-        except Exception: continue
+import os
 
-df_pac = pd.DataFrame()
-if os.path.exists("PB - Lima(PAC_PB).csv"):
-    try: df_pac = pd.read_csv("PB - Lima(PAC_PB).csv", sep=";", encoding="utf-8-sig", dtype=str)
-    except Exception: df_pac = pd.read_csv("PB - Lima(PAC_PB).csv", sep=";", encoding="latin1", dtype=str)
-    df_pac.columns = df_pac.columns.str.strip()
+# --- FUNÇÃO AUXILIAR DE LEITURA BLINDADA ---
+def carregar_csv_seguro(caminho_arquivo):
+    """Tenta ler o arquivo testando separadores (, e ;) e encodings comuns."""
+    if not os.path.exists(caminho_arquivo):
+        return pd.DataFrame()
+        
+    encodings = ["utf-8-sig", "latin1", "cp1252"]
+    separadores = [",", ";"] # Tenta ler por VÍRGULA primeiro, depois ponto e vírgula
+    
+    for sep in separadores:
+        for enc in encodings:
+            try:
+                df = pd.read_csv(caminho_arquivo, sep=sep, encoding=enc, dtype=str, skip_blank_lines=True)
+                df.columns = df.columns.str.strip()
+                return df # Retorna o dataframe assim que ler com sucesso
+            except Exception:
+                continue
+    return pd.DataFrame() # Retorna vazio se falhar completamente
 
-df_ret = pd.DataFrame()
-if os.path.exists("PB - Lima(RetomadaObras).csv"):
-    try: df_ret = pd.read_csv("PB - Lima(RetomadaObras).csv", sep=";", encoding="utf-8-sig", dtype=str)
-    except Exception: df_ret = pd.read_csv("PB - Lima(RetomadaObras).csv", sep=";", encoding="latin1", dtype=str)
-    df_ret.columns = df_ret.columns.str.strip()
+# --- CARREGAMENTO DOS TRES BANCOS DE DADOS ---
+df_sec = carregar_csv_seguro("secretarios_cosems_pb.csv")
+df_pac = carregar_csv_seguro("PB - Lima(PAC_PB).csv")
+df_ret = carregar_csv_seguro("PB - Lima(RetomadaObras).csv")
+
+# Validação amigável caso arquivos críticos falhem
+if df_sec.empty and df_pac.empty and df_ret.empty:
+    st.error("❌ Nenhum dos arquivos de dados foi localizado ou carregado corretamente. Verifique os nomes dos arquivos na pasta.")
+
 
 # --- 🎛️ PAINEL LATERAL TOTALMENTE REORGANIZADO ---
 st.sidebar.header("Navegação do Sistema")
