@@ -1,16 +1,6 @@
 import pandas as pd
 import streamlit as st
 import unicodedata
-import sys
-import subprocess
-
-# --- INSTALADOR AUTOMÁTICO PRÁTICO ---
-# Verifica se o geopy está instalado no ambiente atual. Se não, instala sozinho.
-try:
-    import geopy
-except ImportError:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "geopy"])
-    import geopy
 
 st.set_page_config(layout="wide", page_title="Consulta de Secretários", page_icon="🔍")
 
@@ -84,6 +74,7 @@ for col_nome in lista_colunas_secretarios:
 
 df["Município"] = df["Município"].astype(str).str.strip()
 df["Secretário"] = df["Secretário"].astype(str).str.strip()
+
 from geopy.geocoders import Nominatim
 import time
 
