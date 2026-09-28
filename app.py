@@ -77,37 +77,27 @@ for col_nome in lista_colunas_secretarios:
 
 df["Município"] = df["Município"].astype(str).str.strip()
 df["Secretário"] = df["Secretário"].astype(str).str.strip()
-from geopy.geocoders import Nominatim
-import time
 
 import requests
 import urllib.parse
-import time
 
-# --- FUNÇÃO DE BUSCA DIRETA POR NOME (SEM COORDENADAS MANUAIS) ---
+# --- NOVA FUNÇÃO QUE SUBSTITUI O GEOPY COM SUCESSO ---
 @st.cache_data(show_spinner=False)
 def buscar_coordenadas_municipio(nome_municipio):
-    """Consulta a API Nominatim diretamente por texto com tratamento de lista de resultados"""
     try:
-        # Garante a formatação correta para a URL de busca
         cidade_formatada = urllib.parse.quote(f"{nome_municipio}, Paraiba, Brazil")
         url = f"https://openstreetmap.org{cidade_formatada}&format=jsonv2&limit=1"
-        
-        headers = {
-            "User-Agent": "HubTransferenciasSaudePB/4.0 (contato_analytics@dominio.com)"
-        }
+        headers = {"User-Agent": "HubTransferenciasSaudePB/4.0 (contato_analytics@dominio.com)"}
         
         resposta = requests.get(url, headers=headers, timeout=8)
         dados = resposta.json()
         
-        # Acessa o índice [0] do retorno do mapa
         if dados and len(dados) > 0:
             return float(dados[0]["lat"]), float(dados[0]["lon"])
     except Exception:
         pass
-    
-    # Centro geográfico neutro da Paraíba como segurança
     return -7.0600, -36.3600
+
 
 # --- PAINEL LATERAL DE BUSCA ---
 with st.sidebar:
