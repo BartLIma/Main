@@ -1,4 +1,17 @@
 import streamlit as st
+import sys
+import subprocess
+
+# --- INTERVENÇÃO DE ESCUDAÇÃO DO AMBIENTE ---
+# Força o ambiente do Menu Principal a reconhecer ou baixar o geopy antes de qualquer clique
+try:
+    from geopy.geocoders import Nominatim
+except ImportError:
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "geopy"])
+        from geopy.geocoders import Nominatim
+    except Exception:
+        pass
 
 st.set_page_config(layout="wide")
 
