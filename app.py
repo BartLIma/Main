@@ -1,27 +1,17 @@
 import pandas as pd
 import streamlit as st
+import requests
+import unicodedata
 
 st.set_page_config(layout="wide", page_title="Consulta de Secretários", page_icon="🔍")
 
-# --- TRUQUE CSS ATUALIZADO: Design moderno e espaçamentos equilibrados ---
+# --- TRUQUE CSS ATUALIZADO ---
 st.markdown(
     """
     <style>
-        /* Ajuste do container principal */
         .block-container { padding-top: 2rem !important; padding-bottom: 2rem !important; }
-        
-        /* Estilização dos cards/fichas para dar profundidade */
-        div[data-testid="stVerticalBlock"] > div {
-            border-radius: 0px;
-        }
-        
-        /* Customização discreta de títulos */
-        h2, h3 {
-            color: #1E3A8A;
-            font-weight: 600 !important;
-        }
-        
-        /* Ajuste de margens de parágrafos */
+        div[data-testid="stVerticalBlock"] > div { border-radius: 0px; }
+        h2, h3 { color: #1E3A8A; font-weight: 600 !important; }
         .stMarkdown p { margin-bottom: 0.5rem !important; }
     </style>
     """,
@@ -35,7 +25,6 @@ if "indice_secretario_consultado" not in st.session_state:
 encodings_para_testar = ["utf-8-sig", "ISO-8859-1", "cp1252"]
 df = None
 
-# Tenta ler primeiro com separador por VÍRGULA testando as codificações
 for enc in encodings_para_testar:
     try:
         df = pd.read_csv("secretarios_cosems_pb.csv", sep=",", encoding=enc, dtype=str, skip_blank_lines=True)
@@ -43,7 +32,6 @@ for enc in encodings_para_testar:
     except Exception:
         continue
 
-# Se falhar com vírgula, tenta ler com PONTO E VÍRGULA como plano B
 if df is None:
     for enc in encodings_para_testar:
         try:
@@ -52,17 +40,21 @@ if df is None:
         except Exception:
             continue
 
-# Validação final caso o arquivo não exista ou esteja totalmente corrompido
 if df is None:
     st.error("❌ Não foi possível ler o arquivo 'secretarios_cosems_pb.csv'. Verifique se o arquivo está na pasta ou se o formato é válido.")
     st.stop()
     
 df = df.dropna(how="all")
 
-# MAPEAMENTO INTELIGENTE: Corrigido e adaptado
+def normalizar_texto(texto):
+    if not isinstance(texto, str):
+        return ""
+    texto = unicodedata.normalize('NFKD', texto).encode('ascii', 'ignore').decode('utf-8')
+    return texto.strip().lower().replace("-", "").replace(" ", "").replace("_", "")
+
 mapeamento_colunas = {}
 for col in df.columns:
-    col_limpa = col.strip().lower().replace("-", "").replace(" ", "")
+    col_limpa = normalizar_texto(col)
     if "municip" in col_limpa: mapeamento_colunas[col] = "Município"
     elif "secretar" in col_limpa or "nome" in col_limpa: mapeamento_colunas[col] = "Secretário"
     elif "emailinstitucional" in col_limpa: mapeamento_colunas[col] = "Email Institucional"
@@ -76,17 +68,45 @@ for col in df.columns:
 
 df = df.rename(columns=mapeamento_colunas)
 
-# Criação de colunas de segurança caso falte alguma no CSV de origem
 lista_colunas_secretarios = ["Município", "Secretário", "Email", "Email Institucional", "Telefone", "Telefone Institucional", "Endereço da SEMUS", "Fundo de Saúde", "CNPJ", "Região de Saúde"]
 for col_nome in lista_colunas_secretarios:
     if col_nome not in df.columns:
         df[col_nome] = ""
 
-# Higieniza textos bases de pesquisa
 df["Município"] = df["Município"].astype(str).str.strip()
 df["Secretário"] = df["Secretário"].astype(str).str.strip()
+from geopy.geocoders import Nominatim
+import time
 
-# --- PAINEL LATERAL DE BUSCA (MELHORIA ESTÉTICA) ---
+# --- FUNÇÃO ATUALIZADA PARA EVITAR A COORDENADA PADRÃO DE JOÃO PESSOA ---
+@st.cache_data(show_spinner=False)
+def buscar_coordenadas_municipio(nome_municipio):
+    """Consulta as coordenadas reais usando a biblioteca Geopy/Nominatim de forma estável"""
+    try:
+        # Criamos o localizador com um agente único para evitar bloqueios do servidor
+        geolocator = Nominatim(user_agent="cosems_pb_analytics_app_v2")
+        localizacao = geolocator.geocode(f"{nome_municipio}, Paraiba, Brazil", timeout=10)
+        
+        if localizacao:
+            return localizacao.latitude, localizacao.longitude
+    except Exception:
+        pass
+    
+    # Se a busca falhar temporariamente por rede, tenta uma segunda busca focada apenas na cidade e estado
+    try:
+        time.sleep(1) # Pausa amigável exigida pelo servidor de mapas
+        geolocator = Nominatim(user_agent="cosems_pb_analytics_backup")
+        localizacao = geolocator.geocode(f"{nome_municipio}, Paraiba", timeout=10)
+        if localizacao:
+            return localizacao.latitude, localizacao.longitude
+    except Exception:
+        pass
+
+    # CASO TUDO FALHE: Retorna uma coordenada neutra central do estado da Paraíba (Perto de Soledade)
+    # Isso evita cair sempre em João Pessoa e mostra visualmente que o ponto está no interior se for o caso
+    return -7.0600, -36.3600
+
+# --- PAINEL LATERAL DE BUSCA ---
 with st.sidebar:
     st.header("🔍 Painel de Busca")
     st.write("Selecione:")
@@ -105,9 +125,7 @@ with st.sidebar:
                 sec = f" ({row['Secretário']})" if pd.notna(row["Secretário"]) and row["Secretário"].strip() and row["Secretário"].lower() != 'nan' else ""
                 opcoes_secretarios[f"{muni}{sec}"] = idx
             
-            # Garante que a opção em branco fique no topo fixo sem quebrar o sorted()
             lista_ordenada = ["-- Selecione o registro --"] + sorted(list(opcoes_secretarios.keys()))
-            
             selecao = st.selectbox("Registros localizados:", lista_ordenada)
             
             if selecao and selecao != "-- Selecione o registro --":
@@ -120,52 +138,95 @@ with st.sidebar:
     else:
         st.session_state["indice_secretario_consultado"] = None
 
-# --- ÁREA PRINCIPAL (FICHA DE EXIBIÇÃO DE ALTO IMPACTO VISUAL) ---
+# --- ÁREA PRINCIPAL ---
 st.title("🏛️ Sistema de Consulta — Secretarias de Saúde da Paraíba")
 
-# Adiciona validação para garantir que o índice salvo realmente existe no DataFrame atual
 if st.session_state["indice_secretario_consultado"] is not None and st.session_state["indice_secretario_consultado"] in df.index:
     s_idx = st.session_state["indice_secretario_consultado"]
     
-    # Cabeçalho da ficha com visual "Card" usando container interno
-    with st.container(border=True):
-        st.subheader(f"📍 Ficha Institucional — {df.loc[s_idx, 'Município']}")
-        st.markdown("---")
-        
-        # Estrutura limpa em colunas
-        f_col1, f_col2 = st.columns(2)
-        with f_col1:
-            st.markdown(f"👤 **Secretário(a) de Saúde:**<br><span style='font-size: 18px; color: #2563EB; font-weight: bold;'>{df.loc[s_idx, 'Secretário']}</span>", unsafe_allow_html=True)
-            st.write("") # Espaçador
-            v_em = df.loc[s_idx, "Email"]
-            st.write(f"📧 **E-mail Pessoal:** {v_em if pd.notna(v_em) and str(v_em).lower() != 'nan' else '_Não informado_'}")
-            v_emi = df.loc[s_idx, "Email Institucional"]
-            st.write(f"🏢 **E-mail Institucional:** {v_emi if pd.notna(v_emi) and str(v_emi).lower() != 'nan' else '_Não informado_'}")
+    municipio_atual = df.loc[s_idx, 'Município']
+    secretario_atual = df.loc[s_idx, 'Secretário']
+    regiao_atual = df.loc[s_idx, 'Região de Saúde']
+    
+    def obter_valor_valido(campo):
+        val = df.loc[s_idx, campo]
+        if pd.isna(val) or str(val).lower() == 'nan' or str(val).strip() == "":
+            return "Não informado"
+        return str(val).strip()
+
+    txt_em = obter_valor_valido("Email")
+    txt_emi = obter_valor_valido("Email Institucional")
+    txt_tl = obter_valor_valido("Telefone")
+    txt_tli = obter_valor_valido("Telefone Institucional")
+    txt_end = obter_valor_valido("Endereço da SEMUS")
+    txt_fund = obter_valor_valido("Fundo de Saúde")
+    txt_cnpj = obter_valor_valido("CNPJ")
+
+    texto_exportacao = f"""### 📍 FICHA INSTITUCIONAL — {municipio_atual.upper()}
+    
+👤 **Secretário(a):** {secretario_atual}
+🗺️ **Região de Saúde (CIR):** {regiao_atual}
+📧 **E-mail Pessoal:** {txt_em}
+🏢 **E-mail Institucional:** {txt_emi}
+📱 **Telefone Celular:** {txt_tl}
+☎️ **Telefone Institucional:** {txt_tli}
+🏢 **Endereço da SEMUS:** {txt_end}
+🏥 **Fundo de Saúde:** {txt_fund}
+📋 **CNPJ:** {txt_cnpj}
+"""
+
+    col_ficha, col_mapa = st.columns([1.2, 0.8], gap="large")
+    
+    with col_ficha:
+        with st.container(border=True):
+            st.subheader(f"📍 Ficha Institucional — {municipio_atual}")
+            st.markdown("---")
             
-        with f_col2:
-            st.markdown(f"🗺️ **Região de Saúde (CIR):**<br><span style='font-size: 18px; color: #10B981; font-weight: bold;'>{df.loc[s_idx, 'Região de Saúde']}</span>", unsafe_allow_html=True)
-            st.write("") # Espaçador
-            v_tl = df.loc[s_idx, "Telefone"]
-            st.write(f"📱 **Telefone Celular:** {v_tl if pd.notna(v_tl) and str(v_tl).lower() != 'nan' else '_Não informado_'}")
-            v_tli = df.loc[s_idx, "Telefone Institucional"]
-            st.write(f"☎️ **Telefone Institucional:** {v_tli if pd.notna(v_tli) and str(v_tli).lower() != 'nan' else '_Não informado_'}")
-        
-        st.markdown("---")
-        
-        # Coleta das strings de rodapé do card
-        v_end = df.loc[s_idx, 'Endereço da SEMUS']
-        v_fund = df.loc[s_idx, 'Fundo de Saúde']
-        v_cnpj = df.loc[s_idx, 'CNPJ']
-        
-        txt_end = v_end if pd.notna(v_end) and str(v_end).lower() != 'nan' else 'Não informado'
-        txt_fund = v_fund if pd.notna(v_fund) and str(v_fund).lower() != 'nan' else 'Não informado'
-        txt_cnpj = v_cnpj if pd.notna(v_cnpj) and str(v_cnpj).lower() != 'nan' else 'Não informado'
-        
-        # Faixa consolidada mais estilosa dentro do card
-        st.info(f"🏢 **Endereço da SEMUS:** {txt_end} \n\n 🏥 **Fundo de Saúde:** {txt_fund} | 📋 **CNPJ:** {txt_cnpj}")
+            f_col1, f_col2 = st.columns(2)
+            with f_col1:
+                st.markdown(f"👤 **Secretário(a) de Saúde:**<br><span style='font-size: 18px; color: #2563EB; font-weight: bold;'>{secretario_atual}</span>", unsafe_allow_html=True)
+                st.write("") 
+                st.write(f"📧 **E-mail Pessoal:** {txt_em}")
+                st.write(f"🏢 **E-mail Institucional:** {txt_emi}")
+                
+            with f_col2:
+                st.markdown(f"🗺️ **Região de Saúde (CIR):**<br><span style='font-size: 18px; color: #10B981; font-weight: bold;'>{regiao_atual}</span>", unsafe_allow_html=True)
+                st.write("") 
+                st.write(f"📱 **Telefone Celular:** {txt_tl}")
+                st.write(f"☎️ **Telefone Institucional:** {txt_tli}")
+            
+            st.markdown("---")
+            st.info(f"🏢 **Endereço da SEMUS:** {txt_end}")
+            st.warning(f"🏥 **Fundo de Saúde:** {txt_fund}  |  📋 **CNPJ:** {txt_cnpj}")
+
+    with col_mapa:
+        with st.container(border=True):
+            st.subheader("🛠️ Ações e Localização")
+            st.markdown("---")
+            
+            c1, c2 = st.columns(2)
+            with c1:
+                st.download_button(
+                    label="📥 Baixar Dados (TXT)",
+                    data=texto_exportacao,
+                    file_name=f"ficha_saude_{municipio_atual.lower().replace(' ', '_')}.txt",
+                    mime="text/plain",
+                    use_container_width=True
+                )
+            with c2:
+                with st.popover("📋 Copiar Dados", use_container_width=True):
+                    st.code(texto_exportacao, language="markdown")
+            
+            st.markdown(" ")
+            st.markdown("🗺️ **Geolocalização Geográfica**")
+            
+            # --- RENDERIZAÇÃO DO PONTO EXATO DA CIDADE ---
+            lat, lon = buscar_coordenadas_municipio(municipio_atual)
+            df_mapa = pd.DataFrame({"lat": [lat], "lon": [lon]})
+            
+            st.map(df_mapa, size=60, color="#1E3A8A", zoom=11)
 
 else:
-    # Estado inicial amigável quando nenhum município está selecionado ou se reiniciado
     st.markdown("---")
     st.info("💡 **Aguardando consulta:** Utilize o menu ao lado esquerdo para digitar o nome de uma cidade ou gestor e abrir a ficha cadastral completa.")
 
