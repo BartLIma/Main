@@ -1,7 +1,7 @@
-streamlit==1.38.0
-pandas==2.2.2
-streamlit
-openpyxl
+#streamlit==1.38.0
+#pandas==2.2.2
+#streamlit
+#openpyxl
 streamlit
 pandas
 openpyxl
