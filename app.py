@@ -82,9 +82,6 @@ from geopy.geocoders import Nominatim
 import time
 
 # --- FUNÇÃO ATUALIZADA PARA EVITAR A COORDENADA PADRÃO DE JOÃO PESSOA ---
-import requests
-import urllib.parse
-import time
 
 @st.cache_data(show_spinner=False)
 def buscar_coordenadas_municipio(nome_municipio):
