@@ -1,17 +1,4 @@
 import streamlit as st
-import sys
-import subprocess
-
-# --- INTERVENÇÃO DE ESCUDAÇÃO DO AMBIENTE ---
-# Força o ambiente do Menu Principal a reconhecer ou baixar o geopy antes de qualquer clique
-try:
-    from geopy.geocoders import Nominatim
-except ImportError:
-    try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "geopy"])
-        from geopy.geocoders import Nominatim
-    except Exception:
-        pass
 
 st.set_page_config(layout="wide")
 
@@ -129,17 +116,13 @@ elif st.session_state["app_selecionado"] == "📊 Monitoramento":
 
 elif st.session_state["app_selecionado"] == "🏥 Consulta Secretários":
     try:
-        import importlib
-        import sys
-        # Se o seu arquivo dos secretários se chamar 'app.py':
-        if "app" in sys.modules:
-            importlib.reload(sys.modules["app"])
-        else:
-            import app
+        with open("app.py", "r", encoding="utf-8") as f:
+            codigo_fonte = f.read()
+        exec(codigo_fonte, globals())
     except FileNotFoundError:
-        st.error("Erro operacional: O arquivo 'app.py' não foi localizado na mesma pasta deste Hub.")
+        st.error("Erro: O arquivo 'app.py' não foi localizado.")
     except Exception as e:
-        st.error(f"Ocorreu uma falha ao renderizar a Consulta de Secretários: {e}")
+        st.error(f"Falha ao renderizar: {e}")
 
 elif st.session_state["app_selecionado"] == "🩺 Consulta Equipamentos":
     try:
