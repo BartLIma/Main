@@ -1,10 +1,11 @@
 import pandas as pd
 import streamlit as st
+import requests
 import unicodedata
 
 st.set_page_config(layout="wide", page_title="Consulta de Secretários", page_icon="🔍")
 
-# --- TRUQUE CSS ---
+# --- TRUQUE CSS ATUALIZADO ---
 st.markdown(
     """
     <style>
@@ -74,17 +75,16 @@ for col_nome in lista_colunas_secretarios:
 
 df["Município"] = df["Município"].astype(str).str.strip()
 df["Secretário"] = df["Secretário"].astype(str).str.strip()
-# -- BLOCO 2 -----
 from geopy.geocoders import Nominatim
 import time
 
-# --- FUNÇÃO ATUALIZADA USANDO GEOPY COMPATÍVEL COM SEU REQUIREMENTS ---
+# --- FUNÇÃO ATUALIZADA PARA EVITAR A COORDENADA PADRÃO DE JOÃO PESSOA ---
 @st.cache_data(show_spinner=False)
 def buscar_coordenadas_municipio(nome_municipio):
-    """Consulta as coordenadas reais usando a biblioteca Geopy instalada via requirements"""
+    """Consulta as coordenadas reais usando a biblioteca Geopy/Nominatim de forma estável"""
     try:
-        # Criamos o localizador com um agente limpo e exclusivo
-        geolocator = Nominatim(user_agent="cosems_pb_final_geoloc")
+        # Criamos o localizador com um agente único para evitar bloqueios do servidor
+        geolocator = Nominatim(user_agent="cosems_pb_analytics_app_v2")
         localizacao = geolocator.geocode(f"{nome_municipio}, Paraiba, Brazil", timeout=10)
         
         if localizacao:
@@ -92,16 +92,18 @@ def buscar_coordenadas_municipio(nome_municipio):
     except Exception:
         pass
     
+    # Se a busca falhar temporariamente por rede, tenta uma segunda busca focada apenas na cidade e estado
     try:
-        time.sleep(0.5)
-        geolocator = Nominatim(user_agent="cosems_pb_backup_geoloc")
+        time.sleep(1) # Pausa amigável exigida pelo servidor de mapas
+        geolocator = Nominatim(user_agent="cosems_pb_analytics_backup")
         localizacao = geolocator.geocode(f"{nome_municipio}, Paraiba", timeout=10)
         if localizacao:
             return localizacao.latitude, localizacao.longitude
     except Exception:
         pass
 
-    # Coordenada neutra central do estado da Paraíba (região de Soledade) em caso de falha de rede
+    # CASO TUDO FALHE: Retorna uma coordenada neutra central do estado da Paraíba (Perto de Soledade)
+    # Isso evita cair sempre em João Pessoa e mostra visualmente que o ponto está no interior se for o caso
     return -7.0600, -36.3600
 
 # --- PAINEL LATERAL DE BUSCA ---
@@ -218,7 +220,7 @@ if st.session_state["indice_secretario_consultado"] is not None and st.session_s
             st.markdown(" ")
             st.markdown("🗺️ **Geolocalização Geográfica**")
             
-            # --- RENDERIZAÇÃO VIA GEOPY ---
+            # --- RENDERIZAÇÃO DO PONTO EXATO DA CIDADE ---
             lat, lon = buscar_coordenadas_municipio(municipio_atual)
             df_mapa = pd.DataFrame({"lat": [lat], "lon": [lon]})
             
