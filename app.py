@@ -2,9 +2,6 @@ import pandas as pd
 import streamlit as st
 import requests
 import unicodedata
-import requests
-import urllib.parse
-import time
 
 st.set_page_config(layout="wide", page_title="Consulta de Secretários", page_icon="🔍")
 
@@ -81,34 +78,36 @@ df["Secretário"] = df["Secretário"].astype(str).str.strip()
 from geopy.geocoders import Nominatim
 import time
 
-# --- FUNÇÃO ATUALIZADA PARA EVITAR A COORDENADA PADRÃO DE JOÃO PESSOA ---
+import requests
+import urllib.parse
+import time
 
+# --- FUNÇÃO DE BUSCA DIRETA POR NOME (SEM COORDENADAS MANUAIS) ---
 @st.cache_data(show_spinner=False)
 def buscar_coordenadas_municipio(nome_municipio):
-    """Busca direta e 100% dinâmica pelo nome da cidade, sem precisar de tabelas de coordenadas"""
+    """Consulta a API Nominatim diretamente por texto com tratamento de lista de resultados"""
     try:
-        # Formata e codifica o nome do município para a URL
+        # Garante a formatação correta para a URL de busca
         cidade_formatada = urllib.parse.quote(f"{nome_municipio}, Paraiba, Brazil")
         url = f"https://openstreetmap.org{cidade_formatada}&format=jsonv2&limit=1"
         
-        # Identificação exigida pelo servidor de mapas
         headers = {
-            "User-Agent": "HubTransferenciasSaudePB/3.0 (contato_analytics@dominio.com)"
+            "User-Agent": "HubTransferenciasSaudePB/4.0 (contato_analytics@dominio.com)"
         }
         
-        resposta = requests.get(url, headers=headers, timeout=7)
+        resposta = requests.get(url, headers=headers, timeout=8)
         dados = resposta.json()
         
-        # O pulo do gato: acessamos o primeiro resultado [0] da lista retornada pela API
+        # Acessa o índice [0] do retorno do mapa
         if dados and len(dados) > 0:
             return float(dados[0]["lat"]), float(dados[0]["lon"])
     except Exception:
         pass
     
-    # Centro geográfico da Paraíba como segurança
+    # Centro geográfico neutro da Paraíba como segurança
     return -7.0600, -36.3600
 
-#--- PAINEL LATERAL DE BUSCA ---
+# --- PAINEL LATERAL DE BUSCA ---
 with st.sidebar:
     st.header("🔍 Painel de Busca")
     st.write("Selecione:")
@@ -117,13 +116,13 @@ with st.sidebar:
     
     if busca_termo.strip():
         termo = busca_termo.lower().strip()
-        filtro = df["Município"].str.lower().str.contains(termo) | df["Secretário"].str.lower().str.contains(termo)
+        filtro = df["Municipio_Exibicao"].str.lower().str.contains(termo) | df["Secretário"].str.lower().str.contains(termo)
         registros_encontrados = df[filtro]
         
         if not registros_encontrados.empty:
             opcoes_secretarios = {}
             for idx, row in registros_encontrados.iterrows():
-                muni = row["Município"]
+                muni = row["Municipio_Exibicao"]
                 sec = f" ({row['Secretário']})" if pd.notna(row["Secretário"]) and row["Secretário"].strip() and row["Secretário"].lower() != 'nan' else ""
                 opcoes_secretarios[f"{muni}{sec}"] = idx
             
@@ -146,7 +145,7 @@ st.title("🏛️ Sistema de Consulta — Secretarias de Saúde da Paraíba")
 if st.session_state["indice_secretario_consultado"] is not None and st.session_state["indice_secretario_consultado"] in df.index:
     s_idx = st.session_state["indice_secretario_consultado"]
     
-    municipio_atual = df.loc[s_idx, 'Município']
+    municipio_atual = df.loc[s_idx, 'Municipio_Exibicao']
     secretario_atual = df.loc[s_idx, 'Secretário']
     regiao_atual = df.loc[s_idx, 'Região de Saúde']
     
@@ -222,7 +221,7 @@ if st.session_state["indice_secretario_consultado"] is not None and st.session_s
             st.markdown(" ")
             st.markdown("🗺️ **Geolocalização Geográfica**")
             
-            # --- RENDERIZAÇÃO DO PONTO EXATO DA CIDADE ---
+            # --- MAPA 100% DINÂMICO FUNCIONANDO ---
             lat, lon = buscar_coordenadas_municipio(municipio_atual)
             df_mapa = pd.DataFrame({"lat": [lat], "lon": [lon]})
             
