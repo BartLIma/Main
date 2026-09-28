@@ -116,13 +116,17 @@ elif st.session_state["app_selecionado"] == "📊 Monitoramento":
 
 elif st.session_state["app_selecionado"] == "🏥 Consulta Secretários":
     try:
-        with open("app.py", "r", encoding="utf-8") as f:
-            codigo_fonte = f.read()
-        exec(codigo_fonte, globals())
+        import importlib
+        import sys
+        # Se o seu arquivo dos secretários se chamar 'app.py':
+        if "app" in sys.modules:
+            importlib.reload(sys.modules["app"])
+        else:
+            import app
     except FileNotFoundError:
-        st.error("Erro: O arquivo 'app.py' não foi localizado.")
+        st.error("Erro operacional: O arquivo 'app.py' não foi localizado na mesma pasta deste Hub.")
     except Exception as e:
-        st.error(f"Falha ao renderizar: {e}")
+        st.error(f"Ocorreu uma falha ao renderizar a Consulta de Secretários: {e}")
 
 elif st.session_state["app_selecionado"] == "🩺 Consulta Equipamentos":
     try:
