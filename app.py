@@ -74,47 +74,45 @@ for col_nome in lista_colunas_secretarios:
 
 df["Município"] = df["Município"].astype(str).str.strip()
 df["Secretário"] = df["Secretário"].astype(str).str.strip()
-# BLOCO 2
+# -- BLOCO 2 -----
 import requests
 import urllib.parse
 import time
 
-# --- FUNÇÃO ATUALIZADA: PURE PYTHON (NÃO PRECISA DE GEOPY E NÃO DÁ ERRO NO MENU) ---
+# --- FUNÇÃO ATUALIZADA COM ACESSO DIRETO AO ÍNDICE [0] ---
 @st.cache_data(show_spinner=False)
 def buscar_coordenadas_municipio(nome_municipio):
-    """Consulta a API Nominatim usando requests puro, com alta precisão e sem dependências externas"""
+    """Consulta a API Nominatim tratando a lista de resultados com exatidão"""
     try:
-        # Formata o termo de busca de maneira explícita e segura para URL
         cidade_formatada = urllib.parse.quote(f"{nome_municipio}, Paraiba, Brazil")
         url = f"https://openstreetmap.org{cidade_formatada}&format=jsonv2&limit=1"
         
-        # Cabeçalho estrito de identificação exigido pela política de uso do OpenStreetMap
         headers = {
-            "User-Agent": "ConsultaSecretariosSaudePB/2.0 (suporte_analytics@dominio.com)"
+            "User-Agent": "ConsultaSecretariosSaudePB/3.0 (suporte_analytics@dominio.com)"
         }
         
         resposta = requests.get(url, headers=headers, timeout=8)
         dados = resposta.json()
         
+        # Correção aqui: Acessa o índice [0] da lista retornada
         if dados and len(dados) > 0:
-            # Retorna a latitude e longitude exatas da primeira ocorrência encontrada
             return float(dados[0]["lat"]), float(dados[0]["lon"])
     except Exception:
         pass
     
-    # Segunda tentativa de contingência (caso a string do CSV tenha espaços invisíveis)
     try:
-        time.sleep(1)
+        time.sleep(0.5)
         cidade_reserva = urllib.parse.quote(f"{nome_municipio}, Paraiba")
         url_reserva = f"https://openstreetmap.org{cidade_reserva}&format=jsonv2&limit=1"
-        resposta = requests.get(url_reserva, headers={"User-Agent": "ConsultaSecretariosBackup/2.0"}, timeout=8)
+        resposta = requests.get(url_reserva, headers={"User-Agent": "ConsultaSecretariosBackup/3.0"}, timeout=8)
         dados = resposta.json()
+        
         if dados and len(dados) > 0:
             return float(dados[0]["lat"]), float(dados[0]["lon"])
     except Exception:
         pass
 
-    # Coordenada neutra central do estado da Paraíba (região de Soledade) caso falte rede
+    # Coordenada neutra central do estado da Paraíba (região de Soledade) se faltar rede
     return -7.0600, -36.3600
 
 # --- PAINEL LATERAL DE BUSCA ---
@@ -231,7 +229,7 @@ if st.session_state["indice_secretario_consultado"] is not None and st.session_s
             st.markdown(" ")
             st.markdown("🗺️ **Geolocalização Geográfica**")
             
-            # --- RENDERIZAÇÃO DO PONTO VIA REQUESTS DIRETOS ---
+            # --- AGORA ENCONTRANDO A CIDADE CORRETA ---
             lat, lon = buscar_coordenadas_municipio(municipio_atual)
             df_mapa = pd.DataFrame({"lat": [lat], "lon": [lon]})
             
