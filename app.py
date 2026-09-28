@@ -75,44 +75,33 @@ for col_nome in lista_colunas_secretarios:
 df["Município"] = df["Município"].astype(str).str.strip()
 df["Secretário"] = df["Secretário"].astype(str).str.strip()
 # -- BLOCO 2 -----
-import requests
-import urllib.parse
+from geopy.geocoders import Nominatim
 import time
 
-# --- FUNÇÃO ATUALIZADA COM ACESSO DIRETO AO ÍNDICE [0] ---
+# --- FUNÇÃO ATUALIZADA USANDO GEOPY COMPATÍVEL COM SEU REQUIREMENTS ---
 @st.cache_data(show_spinner=False)
 def buscar_coordenadas_municipio(nome_municipio):
-    """Consulta a API Nominatim tratando a lista de resultados com exatidão"""
+    """Consulta as coordenadas reais usando a biblioteca Geopy instalada via requirements"""
     try:
-        cidade_formatada = urllib.parse.quote(f"{nome_municipio}, Paraiba, Brazil")
-        url = f"https://openstreetmap.org{cidade_formatada}&format=jsonv2&limit=1"
+        # Criamos o localizador com um agente limpo e exclusivo
+        geolocator = Nominatim(user_agent="cosems_pb_final_geoloc")
+        localizacao = geolocator.geocode(f"{nome_municipio}, Paraiba, Brazil", timeout=10)
         
-        headers = {
-            "User-Agent": "ConsultaSecretariosSaudePB/3.0 (suporte_analytics@dominio.com)"
-        }
-        
-        resposta = requests.get(url, headers=headers, timeout=8)
-        dados = resposta.json()
-        
-        # Correção aqui: Acessa o índice [0] da lista retornada
-        if dados and len(dados) > 0:
-            return float(dados[0]["lat"]), float(dados[0]["lon"])
+        if localizacao:
+            return localizacao.latitude, localizacao.longitude
     except Exception:
         pass
     
     try:
         time.sleep(0.5)
-        cidade_reserva = urllib.parse.quote(f"{nome_municipio}, Paraiba")
-        url_reserva = f"https://openstreetmap.org{cidade_reserva}&format=jsonv2&limit=1"
-        resposta = requests.get(url_reserva, headers={"User-Agent": "ConsultaSecretariosBackup/3.0"}, timeout=8)
-        dados = resposta.json()
-        
-        if dados and len(dados) > 0:
-            return float(dados[0]["lat"]), float(dados[0]["lon"])
+        geolocator = Nominatim(user_agent="cosems_pb_backup_geoloc")
+        localizacao = geolocator.geocode(f"{nome_municipio}, Paraiba", timeout=10)
+        if localizacao:
+            return localizacao.latitude, localizacao.longitude
     except Exception:
         pass
 
-    # Coordenada neutra central do estado da Paraíba (região de Soledade) se faltar rede
+    # Coordenada neutra central do estado da Paraíba (região de Soledade) em caso de falha de rede
     return -7.0600, -36.3600
 
 # --- PAINEL LATERAL DE BUSCA ---
@@ -229,7 +218,7 @@ if st.session_state["indice_secretario_consultado"] is not None and st.session_s
             st.markdown(" ")
             st.markdown("🗺️ **Geolocalização Geográfica**")
             
-            # --- AGORA ENCONTRANDO A CIDADE CORRETA ---
+            # --- RENDERIZAÇÃO VIA GEOPY ---
             lat, lon = buscar_coordenadas_municipio(municipio_atual)
             df_mapa = pd.DataFrame({"lat": [lat], "lon": [lon]})
             
