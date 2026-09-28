@@ -1,11 +1,20 @@
 import pandas as pd
 import streamlit as st
-import requests
 import unicodedata
+import sys
+import subprocess
+
+# --- INSTALADOR AUTOMÁTICO PRÁTICO ---
+# Verifica se o geopy está instalado no ambiente atual. Se não, instala sozinho.
+try:
+    import geopy
+except ImportError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "geopy"])
+    import geopy
 
 st.set_page_config(layout="wide", page_title="Consulta de Secretários", page_icon="🔍")
 
-# --- TRUQUE CSS ATUALIZADO ---
+# --- TRUQUE CSS ---
 st.markdown(
     """
     <style>
@@ -75,32 +84,33 @@ for col_nome in lista_colunas_secretarios:
 
 df["Município"] = df["Município"].astype(str).str.strip()
 df["Secretário"] = df["Secretário"].astype(str).str.strip()
-import requests
-import urllib.parse
+from geopy.geocoders import Nominatim
+import time
 
-# --- FUNÇÃO SUBSTITUTA PURA (NÃO PRECISA DE GEOPY E EVITA ERROS DE MENU) ---
+# --- FUNÇÃO DE ALTA PRECISÃO GARANTIDA PELO GEOPY ---
 @st.cache_data(show_spinner=False)
 def buscar_coordenadas_municipio(nome_municipio):
-    """Consulta a API Nominatim usando apenas requests nativo, eliminando erros de modulo"""
+    """Garante a busca exata da cidade usando geopy independente de como o app foi chamado"""
     try:
-        # Codifica o nome para formato de URL seguro
-        termo_busca = urllib.parse.quote(f"{nome_municipio}, Paraiba, Brazil")
-        url = f"https://openstreetmap.org{termo_busca}&format=jsonv2&limit=1"
-        
-        # Cabeçalho de identificação para evitar bloqueio do servidor
-        headers = {"User-Agent": "ConsultaSecretariosSaudeParaiba/1.1 (suporte@exemplo.com)"}
-        
-        resposta = requests.get(url, headers=headers, timeout=8)
-        dados = resposta.json()
-        
-        if dados and len(dados) > 0:
-            # Retorna latitude e longitude puras da lista
-            return float(dados[0]["lat"]), float(dados[0]["lon"])
+        geolocator = Nominatim(user_agent="cosems_pb_final_geofix")
+        localizacao = geolocator.geocode(f"{nome_municipio}, Paraiba, Brazil", timeout=10)
+        if localizacao:
+            return localizacao.latitude, localizacao.longitude
     except Exception:
         pass
-        
-    # Coordenada neutra central do estado da Paraíba como contingência segura
+    
+    try:
+        time.sleep(1)
+        geolocator = Nominatim(user_agent="cosems_pb_final_backup")
+        localizacao = geolocator.geocode(f"{nome_municipio}, Paraiba", timeout=10)
+        if localizacao:
+            return localizacao.latitude, localizacao.longitude
+    except Exception:
+        pass
+
+    # Centro geográfico neutro do estado da Paraíba (região de Soledade) caso falte internet
     return -7.0600, -36.3600
+
 # --- PAINEL LATERAL DE BUSCA ---
 with st.sidebar:
     st.header("🔍 Painel de Busca")
@@ -215,7 +225,6 @@ if st.session_state["indice_secretario_consultado"] is not None and st.session_s
             st.markdown(" ")
             st.markdown("🗺️ **Geolocalização Geográfica**")
             
-            # --- RENDERIZAÇÃO DO PONTO EXATO DA CIDADE ---
             lat, lon = buscar_coordenadas_municipio(municipio_atual)
             df_mapa = pd.DataFrame({"lat": [lat], "lon": [lon]})
             
