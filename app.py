@@ -4,13 +4,7 @@ import unicodedata
 
 st.set_page_config(layout="wide", page_title="Consulta de Secretários", page_icon="🔍")
 
-# --- TRUQUE CSS ATUALIZADO: Design moderno e espaçamentos equilibrados ---
-st.markdown(
-    """
-    # --- TRUQUE CSS ATUALIZADO: Tema Bordo para Versao Estatica Local ---
-st.markdown(
-    """
-   # --- TRUQUE CSS ATUALIZADO: Tema Bordo para Versao Estatica Local ---
+# --- TRUQUE CSS ATUALIZADO: Tema Bordo para Versao Estatica Local ---
 st.markdown(
     """
     <style>
@@ -32,7 +26,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
 
 if "indice_secretario_consultado" not in st.session_state:
     st.session_state["indice_secretario_consultado"] = None
