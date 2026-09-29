@@ -20,7 +20,7 @@ st.markdown(
             font-weight: 600 !important;
         }
         h3 {
-            color: #10B981; /* Verde saude para manter a combinacao desejada */
+            color: #006666; /* O VERDE TEAL EXATO DO TEXTO DO CARD 4 (st.info) */
             font-weight: 600 !important;
         }
         .stMarkdown p { 
