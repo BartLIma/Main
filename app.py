@@ -11,11 +11,13 @@ st.markdown(
 # --- TRUQUE CSS ATUALIZADO: Tema Bordô para Versão Estática Local ---
 st.markdown(
     """
+   # --- TRUQUE CSS ATUALIZADO: Tema Bordo para Versao Estatica Local ---
+st.markdown(
+    """
     <style>
         .block-container { padding-top: 2rem !important; padding-bottom: 2rem !important; }
         div[data-testid="stVerticalBlock"] > div { border-radius: 0px; }
         
-        /* Cor Vinho/Bordô para diferenciar visualmente esta versão */
         h2, h3 {
             color: #7F1D1D;
             font-weight: 600 !important;
