@@ -5,26 +5,18 @@ import unicodedata
 
 st.set_page_config(layout="wide", page_title="Consulta de Secretários", page_icon="🔍")
 
-# --- TRUQUE CSS ATUALIZADO: Tema Bordô para Versão Estática Local ---
-st.markdown(
-    """
-   # --- TRUQUE CSS ATUALIZADO: Tema Bordo para Versao Estatica Local ---
+# --- TRUQUE CSS ATUALIZADO ---
 st.markdown(
     """
     <style>
         .block-container { padding-top: 2rem !important; padding-bottom: 2rem !important; }
         div[data-testid="stVerticalBlock"] > div { border-radius: 0px; }
-        
-        h2, h3 {
-            color: #7F1D1D;
-            font-weight: 600 !important;
-        }
+        h2, h3 { color: #1E3A8A; font-weight: 600 !important; }
         .stMarkdown p { margin-bottom: 0.5rem !important; }
     </style>
     """,
     unsafe_allow_html=True
 )
-
 
 if "indice_secretario_consultado" not in st.session_state:
     st.session_state["indice_secretario_consultado"] = None
