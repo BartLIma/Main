@@ -1,31 +1,23 @@
 import pandas as pd
 import streamlit as st
-import requests
 import unicodedata
+import requests
+import urllib.parse
 
 st.set_page_config(layout="wide", page_title="Consulta de Secretários", page_icon="🔍")
 
 # --- TRUQUE CSS ATUALIZADO ---
 st.markdown(
     """
-# --- TRUQUE CSS ATUALIZADO: Tema Bordô para Versão Estática Local ---
-st.markdown(
-    """
     <style>
         .block-container { padding-top: 2rem !important; padding-bottom: 2rem !important; }
         div[data-testid="stVerticalBlock"] > div { border-radius: 0px; }
-        
-        /* Cor Vinho/Bordô para diferenciar visualmente esta versão */
-        h2, h3 {
-            color: #7F1D1D;
-            font-weight: 600 !important;
-        }
+        h2, h3 { color: #1E3A8A; font-weight: 600 !important; }
         .stMarkdown p { margin-bottom: 0.5rem !important; }
     </style>
     """,
     unsafe_allow_html=True
 )
-
 
 if "indice_secretario_consultado" not in st.session_state:
     st.session_state["indice_secretario_consultado"] = None
@@ -50,7 +42,7 @@ if df is None:
             continue
 
 if df is None:
-    st.error("❌ Não foi possível ler o arquivo 'secretarios_cosems_pb.csv'. Verifique se o arquivo está na pasta ou se o formato é válido.")
+    st.error("❌ Não foi possível ler o arquivo 'secretarios_cosems_pb.csv'.")
     st.stop()
     
 df = df.dropna(how="all")
@@ -82,38 +74,39 @@ for col_nome in lista_colunas_secretarios:
     if col_nome not in df.columns:
         df[col_nome] = ""
 
-df["Município"] = df["Município"].astype(str).str.strip()
+# CRIAÇÃO DA COLUNA FIXA EXIGIDA PELO ERRO:
+df["Municipio_Exibicao"] = df["Município"].astype(str).str.strip()
 df["Secretário"] = df["Secretário"].astype(str).str.strip()
-from geopy.geocoders import Nominatim
-import time
-
-import requests
-import urllib.parse
-import time
-
-# --- FUNÇÃO DE BUSCA DIRETA POR NOME (SEM COORDENADAS MANUAIS) ---
-@st.cache_data(show_spinner=False)
+# --- FUNÇÃO DINÂMICA COMPLETA — SEM CACHE PARA EVITAR TRAVAMENTOS NO MENU ---
 def buscar_coordenadas_municipio(nome_municipio):
-    """Consulta a API Nominatim diretamente por texto com tratamento de lista de resultados"""
+    """Consulta em tempo real na API Nominatim sem prender variáveis no cache global do Menu"""
+    if not nome_municipio or pd.isna(nome_municipio):
+        return -7.0600, -36.3600
+        
     try:
-        # Garante a formatação correta para a URL de busca
-        cidade_formatada = urllib.parse.quote(f"{nome_municipio}, Paraiba, Brazil")
+        # Higieniza o texto do município removendo espaços sobressalentes
+        municipio_limpo = str(nome_municipio).strip()
+        
+        # Codifica de forma segura para a URL da requisição
+        cidade_formatada = urllib.parse.quote(f"{municipio_limpo}, Paraiba, Brazil")
         url = f"https://openstreetmap.org{cidade_formatada}&format=jsonv2&limit=1"
         
         headers = {
-            "User-Agent": "HubTransferenciasSaudePB/4.0 (contato_analytics@dominio.com)"
+            "User-Agent": "HubTransferenciasSaudePB/5.0 (contato_analytics@dominio.com)"
         }
         
+        # Realiza a chamada direta à API
         resposta = requests.get(url, headers=headers, timeout=8)
         dados = resposta.json()
         
-        # Acessa o índice [0] do retorno do mapa
+        # Coleta os dados usando o índice correto da lista
         if dados and len(dados) > 0:
             return float(dados[0]["lat"]), float(dados[0]["lon"])
+            
     except Exception:
         pass
-    
-    # Centro geográfico neutro da Paraíba como segurança
+        
+    # Coordenada neutra central de contingência (Região de Soledade)
     return -7.0600, -36.3600
 
 # --- PAINEL LATERAL DE BUSCA ---
@@ -149,7 +142,7 @@ with st.sidebar:
         st.session_state["indice_secretario_consultado"] = None
 
 # --- ÁREA PRINCIPAL ---
-st.title("🏛️ Sistema de Consulta — Secretarias de Saúde da Paraíba")
+st.title("🏛️ Secretarias Municipais de Saúde da Paraíba")
 
 if st.session_state["indice_secretario_consultado"] is not None and st.session_state["indice_secretario_consultado"] in df.index:
     s_idx = st.session_state["indice_secretario_consultado"]
@@ -230,7 +223,7 @@ if st.session_state["indice_secretario_consultado"] is not None and st.session_s
             st.markdown(" ")
             st.markdown("🗺️ **Geolocalização Geográfica**")
             
-            # --- MAPA 100% DINÂMICO FUNCIONANDO ---
+            # --- MAPA TOTALMENTE DINÂMICO FUNCIONANDO ---
             lat, lon = buscar_coordenadas_municipio(municipio_atual)
             df_mapa = pd.DataFrame({"lat": [lat], "lon": [lon]})
             
