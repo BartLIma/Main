@@ -77,31 +77,37 @@ for col_nome in lista_colunas_secretarios:
 # CRIAÇÃO DA COLUNA FIXA EXIGIDA PELO ERRO:
 df["Municipio_Exibicao"] = df["Município"].astype(str).str.strip()
 df["Secretário"] = df["Secretário"].astype(str).str.strip()
-# --- FUNÇÃO DE BUSCA DIRETA POR NOME (CORRIGIDA COM ÍNDICE ZERO) ---
-@st.cache_data(show_spinner=False)
+# --- FUNÇÃO DINÂMICA COMPLETA — SEM CACHE PARA EVITAR TRAVAMENTOS NO MENU ---
 def buscar_coordenadas_municipio(nome_municipio):
-    """Consulta a API Nominatim diretamente por texto buscando o nome da cidade"""
+    """Consulta em tempo real na API Nominatim sem prender variáveis no cache global do Menu"""
+    if not nome_municipio or pd.isna(nome_municipio):
+        return -7.0600, -36.3600
+        
     try:
-        # Formata e codifica o nome do município para a URL de busca
-        cidade_formatada = urllib.parse.quote(f"{nome_municipio}, Paraiba, Brazil")
+        # Higieniza o texto do município removendo espaços sobressalentes
+        municipio_limpo = str(nome_municipio).strip()
+        
+        # Codifica de forma segura para a URL da requisição
+        cidade_formatada = urllib.parse.quote(f"{municipio_limpo}, Paraiba, Brazil")
         url = f"https://openstreetmap.org{cidade_formatada}&format=jsonv2&limit=1"
         
         headers = {
-            "User-Agent": "HubTransferenciasSaudePB/4.0 (contato_analytics@dominio.com)"
+            "User-Agent": "HubTransferenciasSaudePB/5.0 (contato_analytics@dominio.com)"
         }
         
+        # Realiza a chamada direta à API
         resposta = requests.get(url, headers=headers, timeout=8)
         dados = resposta.json()
         
-        # O ajuste que faltava: acessamos o índice [0] da lista retornada
+        # Coleta os dados usando o índice correto da lista
         if dados and len(dados) > 0:
             return float(dados[0]["lat"]), float(dados[0]["lon"])
+            
     except Exception:
         pass
-    
-    # Coordenada neutra central do estado da Paraíba (Região de Soledade) como contingência
+        
+    # Coordenada neutra central de contingência (Região de Soledade)
     return -7.0600, -36.3600
-
 
 # --- PAINEL LATERAL DE BUSCA ---
 with st.sidebar:
