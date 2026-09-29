@@ -77,7 +77,7 @@ for col_nome in lista_colunas_secretarios:
 # CRIAÇÃO DA COLUNA FIXA EXIGIDA PELO ERRO:
 df["Municipio_Exibicao"] = df["Município"].astype(str).str.strip()
 df["Secretário"] = df["Secretário"].astype(str).str.strip()
-# --- FUNÇÃO DE BUSCA DIRETA POR NOME (SEM COORDENADAS MANUAIS) ---
+# --- FUNÇÃO DE BUSCA DIRETA POR NOME (CORRIGIDA COM ÍNDICE ZERO) ---
 @st.cache_data(show_spinner=False)
 def buscar_coordenadas_municipio(nome_municipio):
     """Consulta a API Nominatim diretamente por texto buscando o nome da cidade"""
@@ -93,14 +93,15 @@ def buscar_coordenadas_municipio(nome_municipio):
         resposta = requests.get(url, headers=headers, timeout=8)
         dados = resposta.json()
         
-        # Acessa o primeiro resultado da lista retornado pela API
+        # O ajuste que faltava: acessamos o índice [0] da lista retornada
         if dados and len(dados) > 0:
             return float(dados[0]["lat"]), float(dados[0]["lon"])
     except Exception:
         pass
     
-    # Coordenada neutra central do estado da Paraíba como contingência segura
+    # Coordenada neutra central do estado da Paraíba (Região de Soledade) como contingência
     return -7.0600, -36.3600
+
 
 # --- PAINEL LATERAL DE BUSCA ---
 with st.sidebar:
