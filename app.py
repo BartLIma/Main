@@ -5,9 +5,6 @@ import unicodedata
 
 st.set_page_config(layout="wide", page_title="Consulta de Secretários", page_icon="🔍")
 
-# --- TRUQUE CSS ATUALIZADO ---
-st.markdown(
-    """
 # --- TRUQUE CSS ATUALIZADO: Tema Bordô para Versão Estática Local ---
 st.markdown(
     """
