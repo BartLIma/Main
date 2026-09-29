@@ -4,7 +4,7 @@ import unicodedata
 
 st.set_page_config(layout="wide", page_title="Consulta de Secretários", page_icon="🔍")
 
-# --- TRUQUE CSS ATUALIZADO: Tema Bordo para Versao Estatica Local ---
+# --- TRUQUE CSS ATUALIZADO: Tema Verde e Azul para Diferenciacao ---
 st.markdown(
     """
     <style>
@@ -15,8 +15,12 @@ st.markdown(
         div[data-testid="stVerticalBlock"] > div { 
             border-radius: 0px; 
         }
-        h2, h3 {
-            color: #7F1D1D;
+        h2 {
+            color: #1E3A8A; /* Azul Escuro nos Titulos Principais */
+            font-weight: 600 !important;
+        }
+        h3 {
+            color: #10B981; /* Verde Saude nos Subtitulos */
             font-weight: 600 !important;
         }
         .stMarkdown p { 
