@@ -20,7 +20,7 @@ st.markdown(
             font-weight: 600 !important;
         }
         h3 {
-            color: #28a745; /* O VERDE EXATO DO CARD 2 DE MONITORAMENTO (st.success) */
+            color: #004085; /* O VERDE EXATO DO CARD 2 DE MONITORAMENTO (st.success) */
             font-weight: 600 !important;
         }
         .stMarkdown p { 
