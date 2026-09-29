@@ -3,7 +3,6 @@ import streamlit as st
 import unicodedata
 import requests
 import urllib.parse
-import time
 
 st.set_page_config(layout="wide", page_title="Consulta de Secretários", page_icon="🔍")
 
@@ -43,7 +42,7 @@ if df is None:
             continue
 
 if df is None:
-    st.error("❌ Não foi possível ler o arquivo 'secretarios_cosems_pb.csv'. Verifique se o arquivo está na pasta ou se o formato é válido.")
+    st.error("❌ Não foi possível ler o arquivo 'secretarios_cosems_pb.csv'.")
     st.stop()
     
 df = df.dropna(how="all")
@@ -75,29 +74,33 @@ for col_nome in lista_colunas_secretarios:
     if col_nome not in df.columns:
         df[col_nome] = ""
 
-df["Município"] = df["Município"].astype(str).str.strip()
+# CRIAÇÃO DA COLUNA FIXA EXIGIDA PELO ERRO:
+df["Municipio_Exibicao"] = df["Município"].astype(str).str.strip()
 df["Secretário"] = df["Secretário"].astype(str).str.strip()
-
-import requests
-import urllib.parse
-
-# --- NOVA FUNÇÃO QUE SUBSTITUI O GEOPY COM SUCESSO ---
+# --- FUNÇÃO DE BUSCA DIRETA POR NOME (SEM COORDENADAS MANUAIS) ---
 @st.cache_data(show_spinner=False)
 def buscar_coordenadas_municipio(nome_municipio):
+    """Consulta a API Nominatim diretamente por texto buscando o nome da cidade"""
     try:
+        # Formata e codifica o nome do município para a URL de busca
         cidade_formatada = urllib.parse.quote(f"{nome_municipio}, Paraiba, Brazil")
         url = f"https://openstreetmap.org{cidade_formatada}&format=jsonv2&limit=1"
-        headers = {"User-Agent": "HubTransferenciasSaudePB/4.0 (contato_analytics@dominio.com)"}
+        
+        headers = {
+            "User-Agent": "HubTransferenciasSaudePB/4.0 (contato_analytics@dominio.com)"
+        }
         
         resposta = requests.get(url, headers=headers, timeout=8)
         dados = resposta.json()
         
+        # Acessa o primeiro resultado da lista retornado pela API
         if dados and len(dados) > 0:
             return float(dados[0]["lat"]), float(dados[0]["lon"])
     except Exception:
         pass
+    
+    # Coordenada neutra central do estado da Paraíba como contingência segura
     return -7.0600, -36.3600
-
 
 # --- PAINEL LATERAL DE BUSCA ---
 with st.sidebar:
@@ -213,7 +216,7 @@ if st.session_state["indice_secretario_consultado"] is not None and st.session_s
             st.markdown(" ")
             st.markdown("🗺️ **Geolocalização Geográfica**")
             
-            # --- MAPA 100% DINÂMICO FUNCIONANDO ---
+            # --- MAPA TOTALMENTE DINÂMICO FUNCIONANDO ---
             lat, lon = buscar_coordenadas_municipio(municipio_atual)
             df_mapa = pd.DataFrame({"lat": [lat], "lon": [lon]})
             
@@ -226,3 +229,4 @@ else:
 # --- RODAPÉ DISCRETO ---
 st.markdown("---")
 st.markdown("<p style='text-align:right; font-size:12px; color:#A3A3A3;'>Bartolomeu Lima - Corecon-ES 1541</p>", unsafe_allow_html=True)
+
