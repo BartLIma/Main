@@ -4,7 +4,7 @@ import unicodedata
 
 st.set_page_config(layout="wide", page_title="Consulta de Secretários", page_icon="🔍")
 
-# --- TRUQUE CSS ATUALIZADO: Tema Verde Sucesso (Card 2) e Azul ---
+# --- TRUQUE CSS ATUALIZADO: Tema Azul Informativo (Card 4) e Verde ---
 st.markdown(
     """
     <style>
@@ -16,11 +16,11 @@ st.markdown(
             border-radius: 0px; 
         }
         h2 {
-            color: #1E3A8A; /* Azul Escuro nos Titulos Principais */
+            color: #004085; /* O AZUL ESCURO CORRESPONDENTE AO CARD 4 (st.info) */
             font-weight: 600 !important;
         }
         h3 {
-            color: #004085; /* O VERDE EXATO DO CARD 2 DE MONITORAMENTO (st.success) */
+            color: #10B981; /* Verde saude para manter a combinacao desejada */
             font-weight: 600 !important;
         }
         .stMarkdown p { 
