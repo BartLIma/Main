@@ -142,7 +142,7 @@ with st.sidebar:
         st.session_state["indice_secretario_consultado"] = None
 
 # --- ÁREA PRINCIPAL ---
-st.title("🏛️ Sistema de Consulta — Secretarias de Saúde da Paraíba")
+st.title("🏛️ Secretarias Municipais de Saúde da Paraíba")
 
 if st.session_state["indice_secretario_consultado"] is not None and st.session_state["indice_secretario_consultado"] in df.index:
     s_idx = st.session_state["indice_secretario_consultado"]
