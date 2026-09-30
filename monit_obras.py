@@ -32,42 +32,31 @@ coordenadas_pb = {
     "tenorio": [-6.9536, -36.6322], "umbuzeiro": [-7.6975, -35.5986], "vieiropolis": [-6.6433, -38.2436]
 }
 
-# --- FUNÇÃO AUXILIAR DE LIMPEZA DE ACENTOS ---
 def limpar_texto_muni(txt):
     return str(txt).lower().strip().replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u").replace("â","a").replace("ê","e").replace("ô","o").replace("ã","a").replace("õ","a").replace("ç","c")
 
-import os
-
-# --- FUNÇÃO AUXILIAR DE LEITURA BLINDADA ---
 def carregar_csv_seguro(caminho_arquivo):
-    """Tenta ler o arquivo testando separadores (, e ;) e encodings comuns."""
     if not os.path.exists(caminho_arquivo):
         return pd.DataFrame()
-        
     encodings = ["utf-8-sig", "latin1", "cp1252"]
-    separadores = [",", ";"] # Tenta ler por VÍRGULA primeiro, depois ponto e vírgula
-    
+    separadores = [",", ";"]
     for sep in separadores:
         for enc in encodings:
             try:
                 df = pd.read_csv(caminho_arquivo, sep=sep, encoding=enc, dtype=str, skip_blank_lines=True)
                 df.columns = df.columns.str.strip()
-                return df # Retorna o dataframe assim que ler com sucesso
+                return df
             except Exception:
                 continue
-    return pd.DataFrame() # Retorna vazio se falhar completamente
+    return pd.DataFrame()
 
-# --- CARREGAMENTO DOS TRES BANCOS DE DADOS ---
 df_sec = carregar_csv_seguro("secretarios_cosems_pb.csv")
 df_pac = carregar_csv_seguro("PB - Lima(PAC_PB).csv")
 df_ret = carregar_csv_seguro("PB - Lima(RetomadaObras).csv")
 
-# Validação amigável caso arquivos críticos falhem
 if df_sec.empty and df_pac.empty and df_ret.empty:
     st.error("❌ Nenhum dos arquivos de dados foi localizado ou carregado corretamente. Verifique os nomes dos arquivos na pasta.")
 
-
-# --- 🎛️ PAINEL LATERAL TOTALMENTE REORGANIZADO ---
 st.sidebar.header("Navegação do Sistema")
 tipo_acompanhamento = st.sidebar.radio(
     "Selecione a ação desejada:",
@@ -118,10 +107,15 @@ if tipo_acompanhamento == "Obras Novo PAC":
         dias_sem_mon = dados_obra.get("Dias sem monitoramento SISMOB", "")
         prioridade = dados_obra.get("Prioridade de contato", "")
         
-        # --- RESGATE SEGURO DOS NOVOS CAMPOS DO NOVO PAC ---
+        # --- RESGATE SEGURO DAS 4 NOVAS COLUNAS DO NOVO PAC ---
+        ano_prop_pac = dados_obra.get("Ano da Proposta", "-")
+        porte_pac = dados_obra.get("Porte", "-")
+        data_prev_pac = dados_obra.get("Data prevista de conclusão SISMOB", "-")
+        sit_equipe_pac = dados_obra.get("Situação equipe PAC", "-")
+        
         quem_contato = dados_obra.get("Quem fez o contato?", "-") or "-"
         data_contato = dados_obra.get("Data do contato", "-") or "-"
-        acoes_realizadas = dados_obra.get("Ações", "-") or "-"  # <--- Nova captura
+        acoes_realizadas = dados_obra.get("Ações", "-") or "-"
         exec_ente = dados_obra.get("Execução informada pelo ente (%)", "-") or "-"
         prev_conclusao = dados_obra.get("Data/Previsão de conclusão informada pelo ente", "-") or "-"
         prev_inauguracao = dados_obra.get("Data/Previsão de integração informada pelo ente", "-") or "-"
@@ -133,11 +127,15 @@ if tipo_acompanhamento == "Obras Novo PAC":
             st.markdown(f"**Município:** {muni}")
             st.markdown(f"**Unidade:** {unidade}")
             st.markdown(f"**Componente:** {comp}")
+            st.markdown(f"**Ano da Proposta:** {ano_prop_pac}")
+            st.markdown(f"**Porte:** <span style='color:#1E3A8A; font-weight:bold;'>{porte_pac}</span>", unsafe_allow_html=True)
         with col2:
             st.markdown(f"**Situação SISMOB:** {sit_sismob}")
             st.markdown(f"**Execução Física:** {exec_fisica}%")
             st.markdown(f"**Dias Sem Monit.:** {dias_sem_mon} dias")
             st.markdown(f"**Prioridade de Contato:** `{prioridade}`")
+            st.markdown(f"**Prev. Conclusão SISMOB:** {data_prev_pac}")
+            st.markdown(f"**Situação Equipe PAC:** `{sit_equipe_pac}`")
 
         # --- EXIBIÇÃO VISUAL DOS DADOS DE CONTATO E AÇÕES (PAC) ---
         st.markdown("---")
@@ -153,18 +151,25 @@ if tipo_acompanhamento == "Obras Novo PAC":
             st.write("")
             st.metric("Previsão de inauguração", prev_inauguracao)
             
-        # Posicionamento imediato da coluna Ações logo após os dados de contato
         st.success(f"**🎯 Próximas Ações e Providências Agendadas:**\n\n{acoes_realizadas}")
         st.info(f"**📝 Observações e problemas relatados:**\n\n{obs_problemas}")
 
-        # Atualização do contexto de mensagem que alimenta o bloco final do WhatsApp
+               # --- MENSAGEM DO NOVO PAC REORGANIZADA EM ORDEM E SEM BARRAS ---
         msg_contexto = (
-    f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n"
-    f"• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n"
-    f"• Data do Repasse: {dados_obra.get('Data do repasse', '-')}\n"  # <-- ADICIONE APENAS ESTA LINHA
-    f"• Último Contato por: {quem_contato} em {data_contato}\n"
-    f"• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
-)
+            f"• Unidade: {unidade}\n"
+            f"• Componente: {comp}\n"
+            f"• Ano da Proposta: {ano_prop_pac}\n"
+            f"• Porte da Obra: {porte_pac}\n"
+            f"• Situação SISMOB: {sit_sismob}\n"
+            f"• Execução Física SISMOB: {exec_fisica}%\n"
+            f"• Dias Sem Monitoramento: {dias_sem_mon}\n"
+            f"• Previsão de Conclusão SISMOB: {data_prev_pac}\n"
+            f"• Situação da Equipe PAC: {sit_equipe_pac}\n"
+            f"• Prioridade de Contato: {prioridade}\n"
+            f"• Último Contato por: {quem_contato} em {data_contato}\n"
+            f"• Providências/Ações Pactuadas: {acoes_realizadas}\n"
+            f"• Obs Ente: {obs_problemas}"
+        )
         programa_nome = "Obras Novo PAC"
 
 # =========================================================================
@@ -203,17 +208,21 @@ elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
         muni = dados_obra.get("Município", "").upper()
         unidade = dados_obra.get("Nome da unidade", "")
         comp = dados_obra.get("Componente", "")
-        porte = dados_obra.get("Porte", "")
-        modalidade = dados_obra.get("Modalidade", "")
         sit_sismob = dados_obra.get("Situação no SISMOB", "")
         exec_fisica = dados_obra.get("Execução física (%) SISMOB", "")
         dias_sem_mon = dados_obra.get("Dias sem monitoramento SISMOB", "")
         prioridade = dados_obra.get("Prioridade de contato", "")
         
-        # --- RESGATE SEGURO DOS NOVOS CAMPOS DA RETOMADA ---
+        # --- RESGATE SEGURO DAS 5 NOVAS COLUNAS DA RETOMADA ---
+        ano_prop_ret = dados_obra.get("Ano da Proposta", "-")
+        porte_ret = dados_obra.get("Porte", "-")
+        modalidade_ret = dados_obra.get("Modalidade", "-")
+        data_trr_ret = dados_obra.get("Data assinatura TRR", "-")
+        data_prev_ret = dados_obra.get("Data prevista de conclusão SISMOB", "-")
+        
         quem_contato = dados_obra.get("Quem fez o contato?", "-") or "-"
         data_contato = dados_obra.get("Data do contato", "-") or "-"
-        acoes_realizadas = dados_obra.get("Ações", "-") or "-"  # <--- Nova captura
+        acoes_realizadas = dados_obra.get("Ações", "-") or "-"
         exec_ente = dados_obra.get("Execução informada pelo ente (%)", "-") or "-"
         prev_conclusao = dados_obra.get("Data/Previsão de conclusão informada pelo ente", "-") or "-"
         prev_inauguracao = dados_obra.get("Data/Previsão de inauguração informada pelo ente", "-") or "-"
@@ -225,12 +234,15 @@ elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
             st.markdown(f"**Município:** {muni}")
             st.markdown(f"**Unidade:** {unidade}")
             st.markdown(f"**Componente:** {comp}")
-            st.markdown(f"**Porte / Modalidade:** {porte} | {modalidade}")
+            st.markdown(f"**Ano da Proposta:** {ano_prop_ret}")
+            st.markdown(f"**Porte / Modalidade:** <span style='color:#1E3A8A; font-weight:bold;'>{porte_ret}</span> | <span style='color:#28a745; font-weight:bold;'>{modalidade_ret}</span>", unsafe_allow_html=True)
         with col_r2:
             st.markdown(f"**Situação SISMOB:** {sit_sismob}")
             st.markdown(f"**Execução Física:** {exec_fisica}%")
             st.markdown(f"**Dias Sem Monit.:** {dias_sem_mon} dias")
             st.markdown(f"**Prioridade de Contato:** `{prioridade}`")
+            st.markdown(f"**Data Assinatura TRR:** {data_trr_ret}")
+            st.markdown(f"**Prev. Conclusão SISMOB:** {data_prev_ret}")
         
         # --- EXIBIÇÃO VISUAL DOS DADOS DE CONTATO E AÇÕES (RETOMADA) ---
         st.markdown("---")
@@ -246,19 +258,28 @@ elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
             st.write("")
             st.metric("Previsão de inauguração", prev_inauguracao)
             
-        # Posicionamento imediato da coluna Ações logo após os dados de contato
         st.success(f"**🎯 Próximas Ações e Providências Agendadas:**\n\n{acoes_realizadas}")
         st.warning(f"**📝 Observações e problemas relatados:**\n\n{obs_problemas}")
 
-        # Atualização do contexto de mensagem que alimenta o bloco final do WhatsApp
-    msg_contexto = (
-     f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n"
-     f"• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n"
-     f"• Data do Repasse: {dados_obra.get('Data do repasse', '-')}\n"
-     f"• Último Contato por: {quem_contato} em {data_contato}\n"
-     f"• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
+               # --- MENSAGEM DA RETOMADA REORGANIZADA EM ORDEM E SEM BARRAS ---
+        msg_contexto = (
+            f"• Unidade: {unidade}\n"
+            f"• Componente: {comp}\n"
+            f"• Ano da Proposta: {ano_prop_ret}\n"
+            f"• Porte da Obra: {porte_ret}\n"
+            f"• Modalidade: {modalidade_ret}\n"
+            f"• Situação SISMOB: {sit_sismob}\n"
+            f"• Execução Física SISMOB: {exec_fisica}%\n"
+            f"• Dias Sem Monitoramento: {dias_sem_mon}\n"
+            f"• Data Assinatura TRR: {data_trr_ret}\n"
+            f"• Previsão de Conclusão SISMOB: {data_prev_ret}\n"
+            f"• Prioridade de Contato: {prioridade}\n"
+            f"• Último Contato por: {quem_contato} em {data_contato}\n"
+            f"• Providências/Ações Pactuadas: {acoes_realizadas}\n"
+            f"• Obs Ente: {obs_problemas}"
         )
-    programa_nome = "Obras Novo PAC"
+        programa_nome = "Retomada de Obras Paralisadas"
+
 # =========================================================================
 # FLUXO 3: NOVO SISTEMA DE GEORREFERENCIAMENTO INTEGRADO TRICOR
 # =========================================================================
@@ -328,7 +349,7 @@ else:
         if dados_mapa:
             st.error(f"🚨 ATENÇÃO: Identificados {len(dados_mapa)} MUNICÍPIOS CRÍTICOS com obras nos dois programas simultaneamente!")
 
-    # Renderização segura do mapa e tabelas apenas se houver dados coletados
+    # Renderização do mapa e tabelas
     if dados_mapa:
         df_mapa = pd.DataFrame(dados_mapa)
         st.map(df_mapa, latitude="lat", longitude="lon", zoom=7)
@@ -340,7 +361,7 @@ else:
         st.info("ℹ️ Selecione uma opção acima ou verifique os arquivos da planilha para renderizar os pontos no mapa.")
 
 # =========================================================================
-# BLOCO INTEGRADO: SECRETÁRIOS (COSEMS/PB) + WHATSAPP (MANTIDO SEGURO)
+# BLOCO INTEGRADO: SECRETÁRIOS (COSEMS/PB) + WHATSAPP 100% DINÂMICO
 # =========================================================================
 if not obras_filtradas.empty and muni:
     st.markdown("---")
@@ -363,7 +384,7 @@ if not obras_filtradas.empty and muni:
 
     saudacao = "Prezado(a) Secretário(a)" if "Não localizado" in nome_secretario else f"Prezado(a) Secretário(a) {nome_secretario}"
     
-    # O corpo da mensagem puxa automaticamente as Ações configuradas no msg_contexto das partes anteriores
+    # Monta a mensagem final integrando o nome do programa perfeitamente corrigido
     mensagem_whatsapp = (
         f"{saudacao},\n\n"
         f"Entramos em contato para verificar a evolução técnica e pendências de engenharia em seu município, vinculadas ao programa de {programa_nome}:\n\n"
@@ -396,3 +417,9 @@ st.markdown(
     "Desenvolvido por: Bartolomeu Lima (Corecon-ES 1541) & AI Workspace 🤝 2026</p>",
     unsafe_allow_html=True
 )
+# --- ROTINA PARA EXIBIR O SELO TABAJARA NO SEU RODAPÉ ---
+#st.sidebar.markdown("---")
+#col_selo, _ = st.sidebar.columns([1, 2])
+#with col_selo:
+    # Basta salvar a imagem com o nome 'selo_durex.png' na mesma pasta do GitHub
+    #st.image("selo_durex.png", caption="Tabajara Resolution", width=110)
