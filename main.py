@@ -97,7 +97,7 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
         # --- 🌵 ADIÇÃO DO NOVO CARD DE MUNICÍPIOS ---
         st.warning("### 🌵 Dados Municípios PB\nColeta de dados institucionais, e-mails, contatos e imagens oficiais das prefeituras da Paraíba via raspagem automatizada.")
         if st.button("Abrir Dados dos Municípios ➡️", use_container_width=True):
-            st.session_state["app_selecionado"] = "🌵 Dados Municípios PB 🌴"
+            st.session_state["app_selecionado"] = "🌴 Dados Municípios PB"
             st.rerun()
             
     with col_cards_8:
