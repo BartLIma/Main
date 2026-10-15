@@ -179,7 +179,7 @@ elif st.session_state["app_selecionado"] == "🏛️ Emendas Parlamentares":
         st.error(f"Ocorreu uma falha ao renderizar o Painel de Emendas: {e}")
 
 # --- NOVO BLOCO: EXECUÇÃO DO APPLICAÇÃO MUNICÍPIOS PB ---
-elif st.session_state["app_selecionado"] == "🌵 Dados Municípios PB":
+elif st.session_state["app_selecionado"] == "🌴 Dados Municípios PB":
     try:
         import importlib
         import sys
