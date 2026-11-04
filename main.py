@@ -50,7 +50,7 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
             st.rerun()
             
     with col_cards_2:
-        st.success("### 📊 Monitoramento\nFormulário de monitoramento em blocos sequenciais com exportação de dados booleanos.")
+        st.success("### 📊 Monitoramento\nFormulário de monitoramento de convênios em blocos sequenciais com exportação de dados booleanos.")
         if st.button("Abrir Relatório ➡️", use_container_width=True):
             st.session_state["app_selecionado"] = "📊 Monitoramento"
             st.rerun()
@@ -78,7 +78,7 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
     col_cards_5, col_cards_6 = st.columns(2)
     
     with col_cards_5:
-        st.info("### 🏗️ Monitoramento de Obras\nAcompanhamento estratégico de engenharia para obras do Novo PAC e Retomada com foco em pendências no SISMOB.")
+        st.info("### 🏗️ Monitoramento de Obras\nAcompanhamento estratégico das obras do Novo PAC e Retomada com foco em pendências no SISMOB.")
         if st.button("Abrir Gestão de Obras ➡️", use_container_width=True):
             st.session_state["app_selecionado"] = "🏗️ Monitoramento de Obras"
             st.rerun()
