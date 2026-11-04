@@ -44,7 +44,7 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
     col_cards_1, col_cards_2 = st.columns(2)
     
     with col_cards_1:
-        st.info("### 💵 Consulta Repasses\nPainel completo de análise, auditoria visual e consulta de dados consolidados de convênios a partir da base histórica.")
+        st.info("### 💵 Consulta Repasses\nPainel de análise, auditoria visual e consulta de dados consolidados de convênios a partir da base histórica.")
         if st.button("Abrir Conrepass ➡️", use_container_width=True):
             st.session_state["app_selecionado"] = "🔍 Consulta Repasses"
             st.rerun()
