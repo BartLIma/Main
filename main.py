@@ -10,24 +10,20 @@ if "app_selecionado" not in st.session_state:
 st.sidebar.title("Gestão de Dados de Transferências")
 st.sidebar.markdown("---")
 
-# Lista unificada de opções - Atualizada com o Relatório Geral de Obras e Dados Municípios PB
+# Lista unificada de opções - Atualizada com o Dados Municípios PB
 opcoes_menu = [
     "🏠 Menu Inicial", 
     "🔍 Consulta Repasses", 
     "📊 Monitoramento",
     "🏥 Consulta Secretários",
-    "🩺 Consulta Equipamentos",
-    "🏗️ Relatório Geral de Obras",  # 👈 Título atualizado
+    "%s" % "🩺 Consulta Equipamentos",
+    "🏗️ Monitoramento de Obras",
     "🏛️ Emendas Parlamentares",
-    "🌴 Dados Municípios PB"
+    "🌴 Dados Municípios PB"  # 👈 Novo item incluído aqui
 ]
 
 if st.session_state["app_selecionado"] not in opcoes_menu:
-    # Correção automática caso o estado da sessão estivesse com o nome antigo
-    if st.session_state["app_selecionado"] == "🏗️ Monitoramento de Obras":
-        st.session_state["app_selecionado"] = "🏗️ Relatório Geral de Obras"
-    else:
-        st.session_state["app_selecionado"] = "🏠 Menu Inicial"
+    st.session_state["app_selecionado"] = "🏠 Menu Inicial"
 
 # Seletor do Aplicativo
 escolha_app = st.sidebar.radio(
@@ -77,14 +73,13 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
 
     st.markdown("---")
 
-    # Terceira linha de cards (Relatório Geral de Obras e Emendas)
+    # Terceira linha de cards (Gestão de Obras e Emendas)
     col_cards_5, col_cards_6 = st.columns(2)
     
     with col_cards_5:
-        # --- CARD DE OBRAS ATUALIZADO ---
-        st.info("### 🏗️ Relatório Geral de Obras\nAcompanhamento estratégico de engenharia para obras do Novo PAC e Retomada com foco em pendências no SISMOB.")
-        if st.button("Abrir Relatório Geral de Obras ➡️", use_container_width=True):
-            st.session_state["app_selecionado"] = "🏗️ Relatório Geral de Obras"
+        st.info("### 🏗️ Monitoramento de Obras\nAcompanhamento estratégico de engenharia para obras do Novo PAC e Retomada com foco em pendências no SISMOB.")
+        if st.button("Abrir Gestão de Obras ➡️", use_container_width=True):
+            st.session_state["app_selecionado"] = "🏗️ Monitoramento de Obras"
             st.rerun()
 
     with col_cards_6:
@@ -99,7 +94,8 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
     col_cards_7, col_cards_8 = st.columns(2)
 
     with col_cards_7:
-        st.warning("### 🌴 Dados Municípios PB\nColeta de dados institucionais, e-mails, contatos e imagens oficiais das prefeituras da Paraíba via raspagem automatizada.")
+        # --- 🌵 ADIÇÃO DO NOVO CARD DE MUNICÍPIOS ---
+        st.warning("### 🌵 Dados Municípios PB\nColeta de dados institucionais, e-mails, contatos e imagens oficiais das prefeituras da Paraíba via raspagem automatizada.")
         if st.button("Abrir Dados dos Municípios ➡️", use_container_width=True):
             st.session_state["app_selecionado"] = "🌴 Dados Municípios PB"
             st.rerun()
@@ -156,19 +152,18 @@ elif st.session_state["app_selecionado"] == "🩺 Consulta Equipamentos":
     except Exception as e:
         st.error(f"Ocorreu uma falha ao renderizar a Consulta de Equipamentos: {e}")
 
-# --- CHAMADA DO SCRIPT DE OBRAS ATUALIZADO ---
-elif st.session_state["app_selecionado"] == "🏗️ Relatório Geral de Obras":
+elif st.session_state["app_selecionado"] == "🏗️ Monitoramento de Obras":
     try:
         import importlib
         import sys
-        if "relatorio_geral_obras" in sys.modules:
-            importlib.reload(sys.modules["relatorio_geral_obras"])
+        if "monit_obras" in sys.modules:
+            importlib.reload(sys.modules["monit_obras"])
         else:
-            import relatorio_geral_obras
+            import monit_obras
     except FileNotFoundError:
-        st.error("Erro operacional: O arquivo 'relatorio_geral_obras.py' não foi localizado na mesma pasta deste Hub.")
+        st.error("Erro operacional: O arquivo 'monit_obras.py' não foi localizado na mesma pasta deste Hub.")
     except Exception as e:
-        st.error(f"Ocorreu uma falha ao renderizar o Relatório Geral de Obras: {e}")
+        st.error(f"Ocorreu uma falha ao renderizar o Monitoramento de Obras: {e}")
 
 elif st.session_state["app_selecionado"] == "🏛️ Emendas Parlamentares":
     try:
@@ -183,6 +178,7 @@ elif st.session_state["app_selecionado"] == "🏛️ Emendas Parlamentares":
     except Exception as e:
         st.error(f"Ocorreu uma falha ao renderizar o Painel de Emendas: {e}")
 
+# --- NOVO BLOCO: EXECUÇÃO DO APPLICAÇÃO MUNICÍPIOS PB ---
 elif st.session_state["app_selecionado"] == "🌴 Dados Municípios PB":
     try:
         import importlib
@@ -196,12 +192,10 @@ elif st.session_state["app_selecionado"] == "🌴 Dados Municípios PB":
     except Exception as e:
         st.error(f"Ocorreu uma falha ao renderizar os Dados dos Municípios: {e}")
 
-# --- RODAPÉ DISCRETO PADRONIZADO DO HUB (AUTORIA E PARCERIA ATUALIZADOS) ---
+# --- RODAPÉ DISCRETO PADRONIZADO DO HUB ---
 st.sidebar.markdown("---")
 st.sidebar.markdown(
-    "<p style='text-align:center; font-size:12px; color:gray; margin-top:20px; line-height:1.6;'>"
-    "<b>Autoria:</b> Bartolomeu Lima - Corecon-ES 1541<br>"
-    "<b>Parceria:</b> Inteligência Artificial (Google Gemini)"
-    "</p>",
+    "<p style='text-align:center; font-size:12px; color:gray; margin-top:20px;'>"
+    "Bartolomeu Lima - Corecon-ES 1541</p>",
     unsafe_allow_html=True
 )
