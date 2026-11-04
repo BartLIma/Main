@@ -10,7 +10,7 @@ if "app_selecionado" not in st.session_state:
 st.sidebar.title("Gestão de Dados de Transferências")
 st.sidebar.markdown("---")
 
-# Lista unificada de opções - Atualizada com o Dados Municípios PB
+# Lista unificada de opções - Atualizada com Cadastro de Obras e Dados Municípios PB
 opcoes_menu = [
     "🏠 Menu Inicial", 
     "🔍 Consulta Repasses", 
@@ -18,8 +18,9 @@ opcoes_menu = [
     "🏥 Consulta Secretários",
     "%s" % "🩺 Consulta Equipamentos",
     "🏗️ Monitoramento de Obras",
+    "📝 Cadastro de Obras",  # 👈 Novo item incluído aqui
     "🏛️ Emendas Parlamentares",
-    "🌴 Dados Municípios PB"  # 👈 Novo item incluído aqui
+    "🌴 Dados Municípios PB"
 ]
 
 if st.session_state["app_selecionado"] not in opcoes_menu:
@@ -90,18 +91,22 @@ if st.session_state["app_selecionado"] == "🏠 Menu Inicial":
 
     st.markdown("---")
 
-    # Quarta linha de cards - Novo Painel de Municípios da PB
+    # Quarta linha de cards (Cadastro de Obras e Dados de Municípios)
     col_cards_7, col_cards_8 = st.columns(2)
 
     with col_cards_7:
-        # --- 🌵 ADIÇÃO DO NOVO CARD DE MUNICÍPIOS ---
+        # --- 📝 ADIÇÃO DO NOVO CARD DE CADASTRO DE OBRAS ---
+        st.info("### 📝 Cadastro de Obras\nRelatório Geral de Obras com consolidação financeira automatizada, geolocalização por GPS e gerador de resumos para cópia rápida.")
+        if st.button("Abrir Cadastro de Obras ➡️", use_container_width=True):
+            st.session_state["app_selecionado"] = "📝 Cadastro de Obras"
+            st.rerun()
+            
+    with col_cards_8:
+        # --- 🌵 CARD DE MUNICÍPIOS ---
         st.warning("### 🌵 Dados Municípios PB\nColeta de dados institucionais, e-mails, contatos e imagens oficiais das prefeituras da Paraíba via raspagem automatizada.")
         if st.button("Abrir Dados dos Municípios ➡️", use_container_width=True):
             st.session_state["app_selecionado"] = "🌴 Dados Municípios PB"
             st.rerun()
-            
-    with col_cards_8:
-        st.empty() # Mantém a simetria visual do layout de duas colunas
 
 elif st.session_state["app_selecionado"] == "🔍 Consulta Repasses":
     try:
@@ -165,6 +170,20 @@ elif st.session_state["app_selecionado"] == "🏗️ Monitoramento de Obras":
     except Exception as e:
         st.error(f"Ocorreu uma falha ao renderizar o Monitoramento de Obras: {e}")
 
+# --- NOVO BLOCO: EXECUÇÃO DO CADASTRO DE OBRAS (CHAMA O FILHO PROPOSTO) ---
+elif st.session_state["app_selecionado"] == "📝 Cadastro de Obras":
+    try:
+        import importlib
+        import sys
+        if "monit_relatorio" in sys.modules:
+            importlib.reload(sys.modules["monit_relatorio"])
+        else:
+            import monit_relatorio
+    except FileNotFoundError:
+        st.error("Erro operacional: O arquivo 'monit_relatorio.py' não foi localizado na mesma pasta deste Hub.")
+    except Exception as e:
+        st.error(f"Ocorreu uma falha ao renderizar o Cadastro de Obras: {e}")
+
 elif st.session_state["app_selecionado"] == "🏛️ Emendas Parlamentares":
     try:
         import importlib
@@ -178,7 +197,6 @@ elif st.session_state["app_selecionado"] == "🏛️ Emendas Parlamentares":
     except Exception as e:
         st.error(f"Ocorreu uma falha ao renderizar o Painel de Emendas: {e}")
 
-# --- NOVO BLOCO: EXECUÇÃO DO APPLICAÇÃO MUNICÍPIOS PB ---
 elif st.session_state["app_selecionado"] == "🌴 Dados Municípios PB":
     try:
         import importlib
@@ -192,10 +210,12 @@ elif st.session_state["app_selecionado"] == "🌴 Dados Municípios PB":
     except Exception as e:
         st.error(f"Ocorreu uma falha ao renderizar os Dados dos Municípios: {e}")
 
-# --- RODAPÉ DISCRETO PADRONIZADO DO HUB ---
+# --- RODAPÉ DISCRETO PADRONIZADO DO HUB (AUTORIA E PARCERIA) ---
 st.sidebar.markdown("---")
 st.sidebar.markdown(
-    "<p style='text-align:center; font-size:12px; color:gray; margin-top:20px;'>"
-    "Bartolomeu Lima - Corecon-ES 1541</p>",
+    "<p style='text-align:center; font-size:12px; color:gray; margin-top:20px; line-height:1.6;'>"
+    "<b>Autoria:</b> Bartolomeu Lima - Corecon-ES 1541<br>"
+    "<b>Parceria:</b> Inteligência Artificial (Google Gemini)"
+    "</p>",
     unsafe_allow_html=True
 )
